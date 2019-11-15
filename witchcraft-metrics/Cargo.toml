@@ -3,6 +3,7 @@ name = "witchcraft-metrics"
 version = "0.1.0"
 authors = ["Steven Fackler <sfackler@palantir.com>"]
 edition = "2018"
+license = "Apache-2.0"
 
 [dependencies]
 exponential-decay-histogram = "0.1"
