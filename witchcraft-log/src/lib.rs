@@ -1,6 +1,8 @@
 //! A structured logging facade for Witchcraft servers.
 //!
-//! While modeled after the standard Rust `log` library, `witchcraft-log` differs in some key ways.
+//! `witchcraft-log` is structured quite similarly to the standard Rust `log` crate. Its usage in libraries versus
+//! executables, log levels, etc are all mostly identical. However, `witchcraft-log` does differ from `log` in some
+//! key ways.
 //!
 //! # Structured Logging
 //!
