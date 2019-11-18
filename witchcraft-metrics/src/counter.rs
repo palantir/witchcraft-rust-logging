@@ -61,3 +61,29 @@ impl Counter {
         self.0.load(Ordering::Relaxed)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::Counter;
+
+    #[test]
+    fn basic() {
+        let counter = Counter::new();
+        assert_eq!(counter.count(), 0);
+
+        counter.inc();
+        assert_eq!(counter.count(), 1);
+
+        counter.add(2);
+        assert_eq!(counter.count(), 3);
+
+        counter.dec();
+        assert_eq!(counter.count(), 2);
+
+        counter.sub(3);
+        assert_eq!(counter.count(), -1);
+
+        counter.clear();
+        assert_eq!(counter.count(), 0);
+    }
+}

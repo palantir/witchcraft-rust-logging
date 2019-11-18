@@ -108,3 +108,40 @@ impl Drop for Time<'_> {
         self.timer.update(self.start.elapsed());
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::Timer;
+    use std::thread;
+    use std::time::Duration;
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn basic() {
+        let timer = Timer::default();
+
+        for _ in 0..15 {
+            timer.update(Duration::from_nanos(0));
+        }
+
+        for _ in 0..5 {
+            timer.update(Duration::from_nanos(5));
+        }
+
+        assert_eq!(timer.count(), 20);
+        assert!(timer.mean_rate() > 0.);
+        assert_eq!(timer.snapshot().value(0.8), 5.)
+    }
+
+    #[test]
+    fn time() {
+        let timer = Timer::default();
+
+        let guard = timer.time();
+        thread::sleep(Duration::from_millis(10));
+        drop(guard);
+
+        assert_eq!(timer.count(), 1);
+        assert!(timer.snapshot().max() >= 10_000_000);
+    }
+}

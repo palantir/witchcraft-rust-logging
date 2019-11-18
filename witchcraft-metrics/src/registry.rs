@@ -232,6 +232,8 @@ impl MetricRegistry {
     }
 
     /// Returns a snapshot of the metrics in the registry.
+    ///
+    /// Modifications to the registry after this method is called will not affect the state of the returned `Metrics`.
     pub fn metrics(&self) -> Metrics {
         Metrics(self.metrics.lock().clone())
     }
@@ -274,3 +276,64 @@ impl<'a> Iterator for MetricsIter<'a> {
 }
 
 impl<'a> ExactSizeIterator for MetricsIter<'a> {}
+
+#[cfg(test)]
+mod test {
+    use crate::{MetricId, MetricRegistry};
+    use serde_value::Value;
+    use std::time::Duration;
+
+    #[test]
+    fn first_metric_wins() {
+        let registry = MetricRegistry::new();
+
+        let a = registry.counter("counter");
+        let b = registry.counter("counter");
+        a.add(1);
+        assert_eq!(b.count(), 1);
+
+        registry.gauge("gauge", || 1);
+        let b = registry.gauge("gauge", || 2);
+        assert_eq!(b.value(), Value::I32(1));
+
+        let a = registry.histogram("histogram");
+        let b = registry.histogram("histogram");
+        a.update(0);
+        assert_eq!(b.count(), 1);
+
+        let a = registry.meter("meter");
+        let b = registry.meter("meter");
+        a.mark(1);
+        assert_eq!(b.count(), 1);
+
+        let a = registry.timer("timer");
+        let b = registry.timer("timer");
+        a.update(Duration::from_secs(0));
+        assert_eq!(b.count(), 1);
+    }
+
+    #[test]
+    fn metrics_returns_snapshot() {
+        let registry = MetricRegistry::new();
+
+        registry.counter("counter");
+
+        let metrics = registry.metrics();
+
+        registry.timer("timer");
+
+        let metrics = metrics.iter().collect::<Vec<_>>();
+        assert_eq!(metrics.len(), 1);
+        assert_eq!(metrics[0].0, &MetricId::new("counter"));
+    }
+
+    #[test]
+    fn tagged_distinct_from_untagged() {
+        let registry = MetricRegistry::new();
+
+        let a = registry.counter("counter");
+        let b = registry.counter(MetricId::new("counter").with_tag("foo", "bar"));
+        a.inc();
+        assert_eq!(b.count(), 0);
+    }
+}

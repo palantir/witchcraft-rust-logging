@@ -89,3 +89,31 @@ impl Snapshot for exponential_decay_histogram::Snapshot {
         self.stddev()
     }
 }
+
+#[cfg(test)]
+#[allow(clippy::float_cmp)]
+mod test {
+    use crate::{ExponentiallyDecayingReservoir, Reservoir};
+
+    #[test]
+    fn exponential_basic() {
+        let reservoir = ExponentiallyDecayingReservoir::new();
+
+        for _ in 0..15 {
+            reservoir.update(0);
+        }
+
+        for _ in 0..5 {
+            reservoir.update(5);
+        }
+
+        let snapshot = reservoir.snapshot();
+
+        assert_eq!(snapshot.value(0.5), 0.);
+        assert_eq!(snapshot.value(0.8), 5.);
+        assert_eq!(snapshot.max(), 5);
+        assert_eq!(snapshot.min(), 0);
+        assert_eq!(snapshot.mean(), 1.25);
+        assert!((snapshot.stddev() - 2.165).abs() < 0.0001);
+    }
+}

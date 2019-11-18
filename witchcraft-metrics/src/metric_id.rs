@@ -119,3 +119,22 @@ impl<'a> Iterator for TagsIter<'a> {
 }
 
 impl<'a> ExactSizeIterator for TagsIter<'a> {}
+
+#[cfg(test)]
+mod test {
+    use crate::MetricId;
+
+    #[test]
+    fn basic() {
+        let id = MetricId::new("foo.bar")
+            .with_tag("a", "b")
+            .with_tag("fizz", "buzz")
+            .with_tag("fizz", "bazz");
+
+        assert_eq!(id.name(), "foo.bar");
+        assert_eq!(
+            id.tags().iter().collect::<Vec<_>>(),
+            &[("a", "b"), ("fizz", "bazz")]
+        );
+    }
+}

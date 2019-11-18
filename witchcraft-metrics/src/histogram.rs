@@ -61,3 +61,59 @@ impl Histogram {
         self.reservoir.snapshot()
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::{Histogram, Reservoir, Snapshot};
+    use std::sync::atomic::{AtomicI64, Ordering};
+
+    struct TestReservoir(AtomicI64);
+
+    impl Reservoir for TestReservoir {
+        fn update(&self, value: i64) {
+            self.0.store(value, Ordering::SeqCst);
+        }
+
+        fn snapshot(&self) -> Box<dyn Snapshot> {
+            Box::new(TestSnapshot(self.0.load(Ordering::SeqCst)))
+        }
+    }
+
+    struct TestSnapshot(i64);
+
+    impl Snapshot for TestSnapshot {
+        fn value(&self, _: f64) -> f64 {
+            unimplemented!()
+        }
+
+        fn max(&self) -> i64 {
+            unimplemented!()
+        }
+
+        fn min(&self) -> i64 {
+            self.0
+        }
+
+        fn mean(&self) -> f64 {
+            unimplemented!()
+        }
+
+        fn stddev(&self) -> f64 {
+            unimplemented!()
+        }
+    }
+
+    #[test]
+    fn basic() {
+        let histogram = Histogram::new(TestReservoir(AtomicI64::new(0)));
+        assert_eq!(histogram.count(), 0);
+
+        histogram.update(15);
+        assert_eq!(histogram.count(), 1);
+        assert_eq!(histogram.snapshot().min(), 15);
+
+        histogram.update(10);
+        assert_eq!(histogram.count(), 2);
+        assert_eq!(histogram.snapshot().min(), 10);
+    }
+}
