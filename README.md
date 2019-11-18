@@ -6,7 +6,7 @@ Logging infrastructure for Witchcraft services.
 
 ## witchcraft-log
 
-[Documentation](htttps://docs.rs/witchcraft-log)
+[Documentation](https://docs.rs/witchcraft-log)
 
 A structured logging facade. It differs from the traditional [`log`](https://crates.io/crates/log) by adding a concept
 of "safety" to log parameters and allowing a [`conjure-error`](https://crates.io/crates/conjure-error) `Error` to be
