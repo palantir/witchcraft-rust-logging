@@ -139,7 +139,7 @@ fn errors() {
 fn bridge() {
     init();
 
-    log::set_logger(&BridgedLogger);
+    let _ = log::set_logger(&BridgedLogger);
     bridge::set_max_level(LevelFilter::Trace);
 
     log::info!("foobar {}", 123);
