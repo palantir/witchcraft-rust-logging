@@ -78,3 +78,6 @@ mod macros;
 #[doc(hidden)]
 pub mod private;
 mod record;
+
+#[cfg(test)]
+mod test;
