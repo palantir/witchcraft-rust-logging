@@ -37,6 +37,18 @@ pub fn log(
     )
 }
 
+pub fn log_minimal(level: Level, &(target, file, line, message): &(&str, &str, u32, &'static str)) {
+    crate::logger().log(
+        &Record::builder()
+            .level(level)
+            .target(target)
+            .file(Some(file))
+            .line(Some(line))
+            .message(message)
+            .build(),
+    )
+}
+
 pub fn enabled(level: Level, target: &str) -> bool {
     crate::logger().enabled(&Metadata::builder().level(level).target(target).build())
 }

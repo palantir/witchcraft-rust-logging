@@ -15,6 +15,15 @@
 /// Logs a message at the specified level.
 #[macro_export]
 macro_rules! log {
+    ($lvl:expr, $msg:expr) => {{
+        let level = $lvl;
+        if level <= $crate::max_level() {
+            $crate::private::log_minimal(
+                level,
+                &(module_path!(), file!(), line!(), $msg),
+            );
+        }
+    }};
     (
         $lvl:expr,
         $msg:expr
