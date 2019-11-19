@@ -15,10 +15,10 @@ use crate::{Level, Metadata, Record};
 use conjure_error::Error;
 use erased_serde::Serialize;
 
-// TODO might be worth adding special cased functions for e.g. no params/errors
 pub fn log(
+    level: Level,
     // package all of the probably-constant bits together so they can just passed as one pointer into .rodata
-    &(level, target, file, line, message): &(Level, &str, &str, u32, &'static str),
+    &(target, file, line, message): &(&str, &str, u32, &'static str),
     safe_params: &[(&'static str, &dyn Serialize)],
     unsafe_params: &[(&'static str, &dyn Serialize)],
     error: Option<&Error>,

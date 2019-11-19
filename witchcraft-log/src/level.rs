@@ -81,6 +81,26 @@ impl PartialOrd<LevelFilter> for Level {
     fn partial_cmp(&self, other: &LevelFilter) -> Option<Ordering> {
         (*self as usize).partial_cmp(&(*other as usize))
     }
+
+    #[inline]
+    fn lt(&self, other: &LevelFilter) -> bool {
+        (*self as usize) < (*other as usize)
+    }
+
+    #[inline]
+    fn le(&self, other: &LevelFilter) -> bool {
+        (*self as usize) <= (*other as usize)
+    }
+
+    #[inline]
+    fn gt(&self, other: &LevelFilter) -> bool {
+        (*self as usize) > (*other as usize)
+    }
+
+    #[inline]
+    fn ge(&self, other: &LevelFilter) -> bool {
+        (*self as usize) >= (*other as usize)
+    }
 }
 
 impl Level {
@@ -153,6 +173,26 @@ impl PartialOrd<Level> for LevelFilter {
     #[inline]
     fn partial_cmp(&self, other: &Level) -> Option<Ordering> {
         (*self as usize).partial_cmp(&(*other as usize))
+    }
+
+    #[inline]
+    fn lt(&self, other: &Level) -> bool {
+        (*self as usize) < (*other as usize)
+    }
+
+    #[inline]
+    fn le(&self, other: &Level) -> bool {
+        (*self as usize) <= (*other as usize)
+    }
+
+    #[inline]
+    fn gt(&self, other: &Level) -> bool {
+        (*self as usize) > (*other as usize)
+    }
+
+    #[inline]
+    fn ge(&self, other: &Level) -> bool {
+        (*self as usize) >= (*other as usize)
     }
 }
 

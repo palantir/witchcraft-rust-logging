@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /// Logs a message at the specified level.
 #[macro_export]
 macro_rules! log {
@@ -25,7 +26,8 @@ macro_rules! log {
         let level = $lvl;
         if level <= $crate::max_level() {
             $crate::private::log(
-                &(level, module_path!(), file!(), line!(), $msg),
+                level,
+                &(module_path!(), file!(), line!(), $msg),
                 &[$($((stringify!($safe_key), &$safe_value)),*)*],
                 &[$($((stringify!($unsafe_key), &$unsafe_value)),*)*],
                 None $(.or(Some(&$error)))?,
