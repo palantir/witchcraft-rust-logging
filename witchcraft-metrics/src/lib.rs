@@ -53,6 +53,7 @@
 //! ```
 //!
 //! [Dropwizard Metrics]: https://github.com/dropwizard/metrics
+#![doc(html_root_url = "https://docs.rs/witchcraft-metrics/0.1")]
 #![warn(missing_docs)]
 
 pub use crate::counter::*;

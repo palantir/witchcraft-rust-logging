@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Steven Fackler <sfackler@palantir.com>"]
 edition = "2018"
 license = "Apache-2.0"
+description = "A structured logging facade for Witchcraft servers"
+repository = "https://github.com/palantir/witchcraft-rust-logging"
+categories = ["development-tools::debugging"]
 
 [dependencies]
 conjure-error = "0.5"

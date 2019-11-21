@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Steven Fackler <sfackler@palantir.com>"]
 edition = "2018"
 license = "Apache-2.0"
+description = "A general-purpose metrics library"
+repository = "https://github.com/palantir/witchcraft-rust-logging"
+categories = ["development-tools::profiling"]
 
 [dependencies]
 exponential-decay-histogram = "0.1"
