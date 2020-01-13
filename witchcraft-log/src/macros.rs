@@ -96,7 +96,8 @@ macro_rules! trace {
 /// Determines if a message logged at the specified level in the same module would be logged or not.
 #[macro_export]
 macro_rules! enabled {
-    ($lvl:expr) => {
-        level <= $crate::max_level() && $crate::private::enabled($lvl, module_path!())
-    };
+    ($lvl:expr) => {{
+        let level = $lvl;
+        level <= $crate::max_level() && $crate::private::enabled(level, module_path!())
+    }};
 }
