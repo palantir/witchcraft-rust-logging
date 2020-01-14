@@ -78,6 +78,7 @@ fn get_records() -> Vec<TestRecord> {
 fn minimal() {
     init();
 
+    assert!(enabled!(Level::Info));
     info!("message");
     let records = get_records();
     assert_eq!(records.len(), 1);
