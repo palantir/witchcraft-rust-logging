@@ -12,7 +12,7 @@ categories = ["development-tools::profiling"]
 exponential-decay-histogram = "0.1"
 parking_lot = "0.11"
 serde = "1.0"
-serde-value = "0.6"
+serde-value = "0.7"
 
 [dev-dependencies]
 assert_approx_eq = "1.1"
