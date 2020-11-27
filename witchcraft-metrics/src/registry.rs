@@ -127,6 +127,30 @@ impl MetricRegistry {
         self.meter_with(id, Meter::default)
     }
 
+    /// Returns the gauge with the specified ID, using make_gauge to register a new one if absent.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a metric is registered with the ID that is not a gauge.
+    pub fn gauge_with<T, F, G>(&self, id: T, make_gauge: F) -> Arc<dyn Gauge>
+    where
+        T: Into<MetricId>,
+        F: FnOnce() -> G,
+        G: Gauge,
+    {
+        match Arc::make_mut(&mut self.metrics.lock()).entry(Arc::new(id.into())) {
+            Entry::Occupied(e) => match e.get() {
+                Metric::Gauge(m) => m.clone(),
+                _ => panic!("metric already registered as a non-gauge: {:?}", e.key()),
+            },
+            Entry::Vacant(e) => {
+                let gauge = Arc::new(make_gauge());
+                e.insert(Metric::Gauge(gauge.clone()));
+                gauge
+            }
+        }
+    }
+
     /// Returns the gauge with the specified ID, registering a new one if absent.
     ///
     /// # Panics
@@ -137,17 +161,17 @@ impl MetricRegistry {
         T: Into<MetricId>,
         G: Gauge,
     {
-        match Arc::make_mut(&mut self.metrics.lock()).entry(Arc::new(id.into())) {
-            Entry::Occupied(e) => match e.get() {
-                Metric::Gauge(m) => m.clone(),
-                _ => panic!("metric already registered as a non-gauge: {:?}", e.key()),
-            },
-            Entry::Vacant(e) => {
-                let gauge = Arc::new(gauge);
-                e.insert(Metric::Gauge(gauge.clone()));
-                gauge
-            }
-        }
+        self.gauge_with(id, || gauge)
+    }
+
+    /// Adds a gauge to the registry, overwriting the previous metric with that ID if present.
+    pub fn replace_gauge<T, G>(&self, id: T, gauge: G)
+    where
+        T: Into<MetricId>,
+        G: Gauge,
+    {
+        Arc::make_mut(&mut self.metrics.lock())
+            .insert(Arc::new(id.into()), Metric::Gauge(Arc::new(gauge)));
     }
 
     /// Returns the histogram with the specified ID, using make_histogram to create it if absent.
