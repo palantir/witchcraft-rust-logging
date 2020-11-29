@@ -11,16 +11,18 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use crate::{ExponentiallyDecayingReservoir, Meter, Reservoir, Snapshot};
+use crate::{Clock, ExponentiallyDecayingReservoir, Meter, Reservoir, Snapshot};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 /// A metric tracking the duration and rate of events.
 ///
-/// The timer's default reservoir implementation (used by its `Default` implementation) is the
-/// `ExponentiallyDecayingReservoir`.
+/// The timer's default reservoir implementation (used by its [`Default`] implementation) is the
+/// [`ExponentiallyDecayingReservoir`].
 pub struct Timer {
     meter: Meter,
     reservoir: Box<dyn Reservoir>,
+    clock: Arc<dyn Clock>,
 }
 
 impl Default for Timer {
@@ -39,6 +41,19 @@ impl Timer {
         Timer {
             meter: Meter::new(),
             reservoir: Box::new(reservoir),
+            clock: crate::SYSTEM_CLOCK.clone(),
+        }
+    }
+
+    /// Creates a new timer using the provided [`Clock`] as its time source.
+    pub fn new_with<R>(reservoir: R, clock: Arc<dyn Clock>) -> Self
+    where
+        R: Reservoir,
+    {
+        Timer {
+            meter: Meter::new_with(clock.clone()),
+            reservoir: Box::new(reservoir),
+            clock,
         }
     }
 
@@ -55,7 +70,7 @@ impl Timer {
     pub fn time(&self) -> Time<'_> {
         Time {
             timer: self,
-            start: Instant::now(),
+            start: self.clock.now(),
         }
     }
 
@@ -105,7 +120,7 @@ pub struct Time<'a> {
 impl Drop for Time<'_> {
     #[inline]
     fn drop(&mut self) {
-        self.timer.update(self.start.elapsed());
+        self.timer.update(self.timer.clock.now() - self.start);
     }
 }
 

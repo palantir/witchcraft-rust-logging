@@ -11,7 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use crate::{Counter, Gauge, Histogram, Meter, MetricId, Timer};
+use crate::{
+    Clock, Counter, ExponentiallyDecayingReservoir, Gauge, Histogram, Meter, MetricId, Timer,
+};
 use parking_lot::Mutex;
 use std::collections::hash_map::Entry;
 use std::collections::{hash_map, HashMap};
@@ -34,7 +36,7 @@ pub enum Metric {
 
 /// A collection of metrics.
 ///
-/// Many of the registry's methods take a `T: Into<MetricId>` rather than just a `MetricId`. This allows you to pass
+/// Many of the registry's methods take a `T: Into<MetricId>` rather than just a [`MetricId`]. This allows you to pass
 /// either a full `MetricId` or just a `&str` for more convenient use:
 ///
 /// ```
@@ -45,9 +47,18 @@ pub enum Metric {
 /// let requests_meter = registry.meter("server.requests");
 /// let yak_shavings = registry.counter(MetricId::new("shavings").with_tag("animal", "yak"));
 /// ```
-#[derive(Default)]
 pub struct MetricRegistry {
     metrics: Mutex<Arc<HashMap<Arc<MetricId>, Metric>>>,
+    clock: Arc<dyn Clock>,
+}
+
+impl Default for MetricRegistry {
+    fn default() -> Self {
+        MetricRegistry {
+            metrics: Mutex::new(Arc::new(HashMap::new())),
+            clock: crate::SYSTEM_CLOCK.clone(),
+        }
+    }
 }
 
 impl MetricRegistry {
@@ -55,6 +66,14 @@ impl MetricRegistry {
     #[inline]
     pub fn new() -> MetricRegistry {
         MetricRegistry::default()
+    }
+
+    /// Sets the [`Clock`] used as a time source for new metrics created by the registry.
+    ///
+    /// Defaults to [`SystemClock`](crate::SystemClock).
+    #[inline]
+    pub fn set_clock(&mut self, clock: Arc<dyn Clock>) {
+        self.clock = clock;
     }
 
     /// Returns the counter with the specified ID, using make_counter to create it if absent.
@@ -124,7 +143,7 @@ impl MetricRegistry {
     where
         T: Into<MetricId>,
     {
-        self.meter_with(id, Meter::default)
+        self.meter_with(id, || Meter::new_with(self.clock.clone()))
     }
 
     /// Returns the gauge with the specified ID, using make_gauge to register a new one if absent.
@@ -209,7 +228,9 @@ impl MetricRegistry {
     where
         T: Into<MetricId>,
     {
-        self.histogram_with(id, Histogram::default)
+        self.histogram_with(id, || {
+            Histogram::new(ExponentiallyDecayingReservoir::new_with(self.clock.clone()))
+        })
     }
 
     /// Returns the timer with the specified ID, using make_timer to create it if absent.
@@ -244,7 +265,12 @@ impl MetricRegistry {
     where
         T: Into<MetricId>,
     {
-        self.timer_with(id, Timer::default)
+        self.timer_with(id, || {
+            Timer::new_with(
+                ExponentiallyDecayingReservoir::new_with(self.clock.clone()),
+                self.clock.clone(),
+            )
+        })
     }
 
     /// Removes a metric from the registry, returning it if present.

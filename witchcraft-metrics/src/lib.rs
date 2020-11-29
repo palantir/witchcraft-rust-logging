@@ -56,6 +56,7 @@
 #![doc(html_root_url = "https://docs.rs/witchcraft-metrics/0.1")]
 #![warn(missing_docs)]
 
+pub use crate::clock::*;
 pub use crate::counter::*;
 pub use crate::gauge::*;
 pub use crate::histogram::*;
@@ -65,6 +66,7 @@ pub use crate::registry::*;
 pub use crate::reservoir::*;
 pub use crate::timer::*;
 
+mod clock;
 mod counter;
 mod gauge;
 mod histogram;

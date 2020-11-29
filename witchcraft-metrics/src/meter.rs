@@ -11,9 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use crate::Clock;
 use parking_lot::Mutex;
 use std::convert::TryFrom;
 use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
+use std::sync::Arc;
 use std::time::Instant;
 
 const INTERVAL_SECS: u64 = 5;
@@ -33,6 +35,7 @@ pub struct Meter {
     uncounted: AtomicI64,
     last_tick: AtomicU64,
     start_time: Instant,
+    clock: Arc<dyn Clock>,
     state: Mutex<State>,
 }
 
@@ -43,16 +46,18 @@ impl Default for Meter {
 }
 
 impl Meter {
-    /// Creates a new meter.
+    /// Creates a new meter with a [`SystemClock`].
     pub fn new() -> Meter {
-        Meter::new_at(Instant::now())
+        Meter::new_with(crate::SYSTEM_CLOCK.clone())
     }
 
-    fn new_at(start_time: Instant) -> Meter {
+    /// Creates a new meter using the provided [`Clock`] as its time source.
+    pub fn new_with(clock: Arc<dyn Clock>) -> Meter {
         Meter {
             uncounted: AtomicI64::new(0),
             last_tick: AtomicU64::new(0),
-            start_time,
+            start_time: clock.now(),
+            clock,
             state: Mutex::new(State {
                 count: 0,
                 rate_1m: Ewma::new(1.),
@@ -64,11 +69,7 @@ impl Meter {
 
     /// Mark the occurrence of `n` event(s).
     pub fn mark(&self, n: i64) {
-        self.mark_at(Instant::now(), n);
-    }
-
-    fn mark_at(&self, time: Instant, n: i64) {
-        self.tick_if_necessary(time);
+        self.tick_if_necessary();
         self.uncounted.fetch_add(n, Ordering::SeqCst);
     }
 
@@ -79,50 +80,35 @@ impl Meter {
 
     /// Returns the one minute rolling average rate of the occurrence of events measured in events per second.
     pub fn one_minute_rate(&self) -> f64 {
-        self.one_minute_rate_at(Instant::now())
-    }
-
-    fn one_minute_rate_at(&self, now: Instant) -> f64 {
-        self.tick_if_necessary(now);
+        self.tick_if_necessary();
         self.state.lock().rate_1m.get()
     }
 
     /// Returns the five minute rolling average rate of the occurrence of events measured in events per second.
     pub fn five_minute_rate(&self) -> f64 {
-        self.five_minute_rate_at(Instant::now())
-    }
-
-    fn five_minute_rate_at(&self, now: Instant) -> f64 {
-        self.tick_if_necessary(now);
+        self.tick_if_necessary();
         self.state.lock().rate_5m.get()
     }
 
     /// Returns the fifteen minute rolling average rate of the occurrence of events measured in events per second.
     pub fn fifteen_minute_rate(&self) -> f64 {
-        self.fifteen_minute_rate_at(Instant::now())
-    }
-
-    fn fifteen_minute_rate_at(&self, now: Instant) -> f64 {
-        self.tick_if_necessary(now);
+        self.tick_if_necessary();
         self.state.lock().rate_15m.get()
     }
 
     /// Returns the mean rate of the occurrence of events since the creation of the meter measured in events per second.
     pub fn mean_rate(&self) -> f64 {
-        self.mean_rate_at(Instant::now())
-    }
-
-    fn mean_rate_at(&self, now: Instant) -> f64 {
         let count = self.count() as f64;
         if count == 0. {
             0.
         } else {
-            let time = (now - self.start_time).as_secs_f64();
+            let time = (self.clock.now() - self.start_time).as_secs_f64();
             count / time
         }
     }
 
-    fn tick_if_necessary(&self, time: Instant) {
+    fn tick_if_necessary(&self) {
+        let time = self.clock.now();
         let old_tick = self.last_tick.load(Ordering::SeqCst);
         let new_tick = (time - self.start_time).as_secs();
         let age = new_tick - old_tick;
@@ -211,36 +197,38 @@ impl Ewma {
 
 #[cfg(test)]
 mod test {
+    use crate::clock::test::TestClock;
     use crate::Meter;
     use assert_approx_eq::assert_approx_eq;
-    use std::time::{Duration, Instant};
+    use std::sync::Arc;
+    use std::time::Duration;
 
     #[test]
     #[allow(clippy::float_cmp)]
     fn starts_out_with_no_rates_or_count() {
-        let time = Instant::now();
-        let meter = Meter::new_at(time);
+        let clock = Arc::new(TestClock::new());
+        let meter = Meter::new_with(clock);
 
         assert_eq!(meter.count(), 0);
-        assert_eq!(meter.one_minute_rate_at(time), 0.);
-        assert_eq!(meter.five_minute_rate_at(time), 0.);
-        assert_eq!(meter.fifteen_minute_rate_at(time), 0.);
-        assert_eq!(meter.mean_rate_at(time), 0.)
+        assert_eq!(meter.one_minute_rate(), 0.);
+        assert_eq!(meter.five_minute_rate(), 0.);
+        assert_eq!(meter.fifteen_minute_rate(), 0.);
+        assert_eq!(meter.mean_rate(), 0.)
     }
 
     #[test]
     fn marks_events_and_updates_rate_and_count() {
-        let time = Instant::now();
-        let meter = Meter::new_at(time);
+        let clock = Arc::new(TestClock::new());
+        let meter = Meter::new_with(clock.clone());
 
-        meter.mark_at(time, 1);
+        meter.mark(1);
 
-        let time = time + Duration::from_secs(10);
-        meter.mark_at(time, 2);
+        clock.advance(Duration::from_secs(10));
+        meter.mark(2);
 
-        assert_approx_eq!(meter.mean_rate_at(time), 0.3, 0.001);
-        assert_approx_eq!(meter.one_minute_rate_at(time), 0.1840, 0.001);
-        assert_approx_eq!(meter.five_minute_rate_at(time), 0.1966, 0.001);
-        assert_approx_eq!(meter.fifteen_minute_rate_at(time), 0.1988, 0.001);
+        assert_approx_eq!(meter.mean_rate(), 0.3, 0.001);
+        assert_approx_eq!(meter.one_minute_rate(), 0.1840, 0.001);
+        assert_approx_eq!(meter.five_minute_rate(), 0.1966, 0.001);
+        assert_approx_eq!(meter.fifteen_minute_rate(), 0.1988, 0.001);
     }
 }
