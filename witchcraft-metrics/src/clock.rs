@@ -44,6 +44,7 @@ pub mod test {
     }
 
     impl TestClock {
+        #[allow(clippy::new_without_default)]
         pub fn new() -> TestClock {
             TestClock {
                 now: Mutex::new(Instant::now()),
