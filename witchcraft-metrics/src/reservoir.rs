@@ -11,8 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use crate::Clock;
 use exponential_decay_histogram::ExponentialDecayHistogram;
 use parking_lot::Mutex;
+use std::sync::Arc;
 
 /// A statistically representative subset of a set of values.
 pub trait Reservoir: 'static + Sync + Send {
@@ -48,23 +50,39 @@ pub trait Snapshot: 'static + Sync + Send {
 }
 
 /// A reservoir which exponentially weights in favor of recent values.
-#[derive(Default)]
-pub struct ExponentiallyDecayingReservoir(Mutex<ExponentialDecayHistogram>);
+pub struct ExponentiallyDecayingReservoir {
+    histogram: Mutex<ExponentialDecayHistogram>,
+    clock: Arc<dyn Clock>,
+}
+
+impl Default for ExponentiallyDecayingReservoir {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl ExponentiallyDecayingReservoir {
-    /// Creates a new reservoir.
-    pub fn new() -> ExponentiallyDecayingReservoir {
-        ExponentiallyDecayingReservoir::default()
+    /// Creates a new reservoir with a [`SystemClock`](crate::SystemClock).
+    pub fn new() -> Self {
+        Self::new_with(crate::SYSTEM_CLOCK.clone())
+    }
+
+    /// Creates a new reservoir using the provided [`Clock`] as its time source.
+    pub fn new_with(clock: Arc<dyn Clock>) -> Self {
+        ExponentiallyDecayingReservoir {
+            histogram: Mutex::new(ExponentialDecayHistogram::builder().at(clock.now()).build()),
+            clock,
+        }
     }
 }
 
 impl Reservoir for ExponentiallyDecayingReservoir {
     fn update(&self, value: i64) {
-        self.0.lock().update(value);
+        self.histogram.lock().update_at(self.clock.now(), value);
     }
 
     fn snapshot(&self) -> Box<dyn Snapshot> {
-        Box::new(self.0.lock().snapshot())
+        Box::new(self.histogram.lock().snapshot())
     }
 }
 
