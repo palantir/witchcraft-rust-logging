@@ -46,7 +46,7 @@ impl Default for Meter {
 }
 
 impl Meter {
-    /// Creates a new meter with a [`SystemClock`].
+    /// Creates a new meter with a [`SystemClock`](crate::SystemClock).
     pub fn new() -> Meter {
         Meter::new_with(crate::SYSTEM_CLOCK.clone())
     }

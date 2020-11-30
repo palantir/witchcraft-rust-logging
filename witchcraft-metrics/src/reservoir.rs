@@ -62,7 +62,7 @@ impl Default for ExponentiallyDecayingReservoir {
 }
 
 impl ExponentiallyDecayingReservoir {
-    /// Creates a new reservoir with a [`SystemClock`].
+    /// Creates a new reservoir with a [`SystemClock`](crate::SystemClock).
     pub fn new() -> Self {
         Self::new_with(crate::SYSTEM_CLOCK.clone())
     }
