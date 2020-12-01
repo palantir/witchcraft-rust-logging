@@ -76,6 +76,12 @@ impl MetricRegistry {
         self.clock = clock;
     }
 
+    /// Returns a reference to the [`Clock`] used as a time source for new metrics created by the registry.
+    #[inline]
+    pub fn clock(&self) -> &Arc<dyn Clock> {
+        &self.clock
+    }
+
     /// Returns the counter with the specified ID, using make_counter to create it if absent.
     ///
     /// # Panics

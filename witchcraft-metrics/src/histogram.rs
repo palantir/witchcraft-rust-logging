@@ -16,8 +16,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 /// A metric tracking a statistical distribution of values.
 ///
-/// The histogram's default reservoir implementation (used by its `Default` implementation) is the
-/// `ExponentiallyDecayingReservoir`.
+/// The histogram's default reservoir implementation (used by its [`Default`] implementation) is the
+/// [`ExponentiallyDecayingReservoir`].
 pub struct Histogram {
     count: AtomicU64,
     reservoir: Box<dyn Reservoir>,
