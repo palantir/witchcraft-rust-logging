@@ -158,4 +158,17 @@ fn bridge() {
         &[("message", Value::String("foobar 123".to_string()))],
     );
     assert_eq!(records[0].error, None);
+
+    log::info!("fizzbuzz");
+    let records = get_records();
+    assert_eq!(records.len(), 1);
+
+    assert_eq!(records[0].level, Level::Info);
+    assert_eq!(records[0].target, module_path!());
+    assert_eq!(records[0].file.as_ref().unwrap(), file!());
+    assert!(records[0].line.is_some());
+    assert_eq!(records[0].message, "fizzbuzz");
+    assert_eq!(records[0].safe_params, &[]);
+    assert_eq!(records[0].unsafe_params, &[]);
+    assert_eq!(records[0].error, None);
 }
