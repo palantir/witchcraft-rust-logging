@@ -64,15 +64,26 @@ impl Log for BridgedLogger {
     }
 
     fn log(&self, record: &log::Record<'_>) {
-        crate::logger().log(
-            &Record::builder()
-                .level(cvt_level(record.level()))
-                .target(record.target())
-                .file(record.file())
-                .line(record.line())
-                .unsafe_params(&[("message", record.args())])
-                .build(),
-        )
+        let mut builder = Record::builder();
+        builder
+            .level(cvt_level(record.level()))
+            .target(record.target())
+            .file(record.file())
+            .line(record.line());
+
+        // If the log message is static, it is safe to log as the WC message. Otherwise, we have to conservatively
+        // assume it contains unsafe data.
+        let args = record.args();
+        let unsafe_params = [("message", args as _)];
+        match args.as_str() {
+            Some(message) => {
+                builder.message(message);
+            }
+            None => {
+                builder.unsafe_params(&unsafe_params);
+            }
+        }
+        crate::logger().log(&builder.build())
     }
 
     fn flush(&self) {
