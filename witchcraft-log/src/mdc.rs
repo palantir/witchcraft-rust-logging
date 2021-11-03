@@ -20,6 +20,7 @@ use once_cell::sync::Lazy;
 use serde::Serialize;
 use std::cell::RefCell;
 use std::collections::{hash_map, HashMap};
+use std::mem;
 use std::sync::Arc;
 
 static EMPTY: Lazy<Arc<HashMap<&'static str, Any>>> = Lazy::new(|| Arc::new(HashMap::new()));
@@ -103,6 +104,14 @@ pub fn set(snapshot: Snapshot) {
     MDC.with(|v| *v.borrow_mut() = snapshot);
 }
 
+/// Swaps the MDC with a snapshot, returning a guard object which will un-swap them with it drops.
+///
+/// Changes to the MDC while the guard is live will be reflected in the snapshot when the guard drops.
+pub fn with(snapshot: &mut Snapshot) -> WithGuard<'_> {
+    MDC.with(|v| mem::swap(&mut *v.borrow_mut(), snapshot));
+    WithGuard { snapshot }
+}
+
 /// A portable snapshot of the MDC.
 pub struct Snapshot {
     safe_mdc: Arc<HashMap<&'static str, Any>>,
@@ -150,5 +159,16 @@ impl ExactSizeIterator for Iter<'_> {
     #[inline]
     fn len(&self) -> usize {
         self.it.len()
+    }
+}
+
+/// The guard type returned by [`with`].
+pub struct WithGuard<'a> {
+    snapshot: &'a mut Snapshot,
+}
+
+impl Drop for WithGuard<'_> {
+    fn drop(&mut self) {
+        MDC.with(|v| mem::swap(&mut *v.borrow_mut(), self.snapshot));
     }
 }
