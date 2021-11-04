@@ -104,7 +104,7 @@ pub fn set(snapshot: Snapshot) {
     MDC.with(|v| *v.borrow_mut() = snapshot);
 }
 
-/// Swaps the MDC with a snapshot, returning a guard object which will un-swap them with it drops.
+/// Swaps the MDC with a snapshot, returning a guard object which will un-swap them when it drops.
 ///
 /// Changes to the MDC while the guard is live will be reflected in the snapshot when the guard drops.
 pub fn with(snapshot: &mut Snapshot) -> WithGuard<'_> {
