@@ -118,7 +118,7 @@ impl Level {
 
     /// Returns the standard string name of the level.
     pub fn as_str(self) -> &'static str {
-        &LOG_LEVEL_NAMES[self as usize]
+        LOG_LEVEL_NAMES[self as usize]
     }
 }
 

@@ -23,7 +23,7 @@
 //! message, information is included via a separate set of parameters. Parameters are partitioned into "safe" parameters
 //! and "unsafe" parameters. Safety in this context is *not* safety in the traditional Rust sense of memory safety, but
 //! instead safety against information leakage. Safe parameters do not contain any sensitive information about use of a
-//! service, and can be exfiltrated from a specific environment, while unsafe parameters contain sensitive information
+//! service and can be exfiltrated from a specific environment, while unsafe parameters contain sensitive information
 //! that should not leave the environment at all. For example, the amount of memory used to process a request could be
 //! a safe parameter, while information about the user executing the request could be an unsafe parameter.
 //!
@@ -76,6 +76,7 @@ mod level;
 mod logger;
 #[macro_use]
 mod macros;
+pub mod mdc;
 #[doc(hidden)]
 pub mod private;
 mod record;
