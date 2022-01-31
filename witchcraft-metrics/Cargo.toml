@@ -11,7 +11,7 @@ categories = ["development-tools::profiling"]
 [dependencies]
 exponential-decay-histogram = "0.1.7"
 once_cell = "1.0"
-parking_lot = "0.11"
+parking_lot = "0.12"
 serde = "1.0"
 serde-value = "0.7"
 
