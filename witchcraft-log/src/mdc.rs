@@ -127,7 +127,7 @@ impl Map {
         self.map.len()
     }
 
-    /// Returns if the map is empty.
+    /// Determines if the map is empty.
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.map.is_empty()
