@@ -23,29 +23,12 @@ use std::collections::{hash_map, HashMap};
 use std::mem;
 use std::sync::Arc;
 
-static EMPTY: Lazy<Arc<HashMap<&'static str, Any>>> = Lazy::new(|| Arc::new(HashMap::new()));
+static EMPTY: Lazy<Map> = Lazy::new(|| Map {
+    map: Arc::new(HashMap::new()),
+});
 
 thread_local! {
-    static MDC: RefCell<Snapshot> = RefCell::new(Snapshot {
-        safe_mdc: EMPTY.clone(),
-        unsafe_mdc: EMPTY.clone(),
-    });
-}
-
-/// Clears the contents of the MDC.
-pub fn clear() {
-    MDC.with(|v| {
-        let mut mdc = v.borrow_mut();
-        // try to preserve capacity if we're the unique owner
-        match Arc::get_mut(&mut mdc.safe_mdc) {
-            Some(safe_mdc) => safe_mdc.clear(),
-            None => mdc.safe_mdc = EMPTY.clone(),
-        }
-        match Arc::get_mut(&mut mdc.unsafe_mdc) {
-            Some(unsafe_mdc) => unsafe_mdc.clear(),
-            None => mdc.unsafe_mdc = EMPTY.clone(),
-        }
-    });
+    static MDC: RefCell<Snapshot> = RefCell::new(Snapshot::new());
 }
 
 /// Inserts a new safe parameter into the MDC.
@@ -53,14 +36,11 @@ pub fn clear() {
 /// # Panics
 ///
 /// Panics if the value cannot be serialized into an [`Any`].
-pub fn insert_safe<T>(key: &'static str, value: T)
+pub fn insert_safe<T>(key: &'static str, value: T) -> Option<Any>
 where
     T: Serialize,
 {
-    MDC.with(|v| {
-        Arc::make_mut(&mut v.borrow_mut().safe_mdc)
-            .insert(key, Any::new(value).expect("value failed to serialize"))
-    });
+    MDC.with(|v| v.borrow_mut().safe_mut().insert(key, value))
 }
 
 /// Inserts a new unsafe parameter into the MDC.
@@ -68,75 +48,144 @@ where
 /// # Panics
 ///
 /// Panics if the value cannot be serialized into an [`Any`].
-pub fn insert_unsafe<T>(key: &'static str, value: T)
+pub fn insert_unsafe<T>(key: &'static str, value: T) -> Option<Any>
 where
     T: Serialize,
 {
-    MDC.with(|v| {
-        Arc::make_mut(&mut v.borrow_mut().unsafe_mdc)
-            .insert(key, Any::new(value).expect("value failed to serialize"))
-    });
+    MDC.with(|v| v.borrow_mut().unsafe_mut().insert(key, value))
 }
 
 /// Removes the specified safe parameter from the MDC.
-pub fn remove_safe(key: &'static str) {
-    MDC.with(|v| Arc::make_mut(&mut v.borrow_mut().safe_mdc).remove(key));
+pub fn remove_safe(key: &str) -> Option<Any> {
+    MDC.with(|v| v.borrow_mut().safe_mut().remove(key))
 }
 
 /// Removes the specified unsafe parameter from the MDC.
-pub fn remove_unsafe(key: &'static str) {
-    MDC.with(|v| Arc::make_mut(&mut v.borrow_mut().unsafe_mdc).remove(key));
+pub fn remove_unsafe(key: &str) -> Option<Any> {
+    MDC.with(|v| v.borrow_mut().unsafe_mut().remove(key))
 }
 
 /// Takes a snapshot of the MDC.
-pub fn snapshot() -> Snapshot {
-    MDC.with(|v| {
-        let mdc = v.borrow();
-        Snapshot {
-            safe_mdc: mdc.safe_mdc.clone(),
-            unsafe_mdc: mdc.unsafe_mdc.clone(),
-        }
-    })
-}
-
-/// Overwrites the MDC with a snapshot.
-pub fn set(snapshot: Snapshot) {
-    MDC.with(|v| *v.borrow_mut() = snapshot);
-}
-
-/// Swaps the MDC with a snapshot, returning a guard object which will un-swap them when it drops.
 ///
-/// Changes to the MDC while the guard is live will be reflected in the snapshot when the guard drops.
-pub fn with(snapshot: &mut Snapshot) -> WithGuard<'_> {
+/// The snapshot and MDC are not connected - updates to the snapshot will not affect the MDC and vice versa.
+pub fn snapshot() -> Snapshot {
+    MDC.with(|v| v.borrow().clone())
+}
+
+/// Clears the contents of the MDC.
+pub fn clear() {
+    MDC.with(|v| {
+        let mut mdc = v.borrow_mut();
+        mdc.safe_mut().clear();
+        mdc.unsafe_mut().clear();
+    });
+}
+
+/// Overwrites the MDC with a snapshot, returning the previous state.
+pub fn set(snapshot: Snapshot) -> Snapshot {
+    MDC.with(|v| mem::replace(&mut *v.borrow_mut(), snapshot))
+}
+
+/// Swaps the MDC with a snapshot in-place.
+pub fn swap(snapshot: &mut Snapshot) {
     MDC.with(|v| mem::swap(&mut *v.borrow_mut(), snapshot));
-    WithGuard { snapshot }
 }
 
-/// A portable snapshot of the MDC.
-pub struct Snapshot {
-    safe_mdc: Arc<HashMap<&'static str, Any>>,
-    unsafe_mdc: Arc<HashMap<&'static str, Any>>,
+/// A map of MDC entries.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Map {
+    map: Arc<HashMap<&'static str, Any>>,
 }
 
-impl Snapshot {
-    /// Returns an iterator over the safe parameters in the snapshot.
+impl Default for Map {
     #[inline]
-    pub fn safe_iter(&self) -> Iter<'_> {
-        Iter {
-            it: self.safe_mdc.iter(),
-        }
-    }
-
-    /// Returns an iterator over the unsafe parameters in the snapshot.
-    #[inline]
-    pub fn unsafe_iter(&self) -> Iter<'_> {
-        Iter {
-            it: self.unsafe_mdc.iter(),
-        }
+    fn default() -> Self {
+        EMPTY.clone()
     }
 }
 
-/// An iterator over parameters in a snapshot.
+impl Map {
+    /// Returns a new, empty map.
+    #[inline]
+    pub fn new() -> Self {
+        Map::default()
+    }
+
+    /// Removes all entries from the map.
+    #[inline]
+    pub fn clear(&mut self) {
+        // try to preserve capacity if we're the unique owner
+        match Arc::get_mut(&mut self.map) {
+            Some(map) => map.clear(),
+            None => *self = Map::new(),
+        }
+    }
+
+    /// Returns the number of entries in the map.
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.map.len()
+    }
+
+    /// Determines if the map is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
+    }
+
+    /// Looks up a value in the map.
+    #[inline]
+    pub fn get(&self, key: &str) -> Option<&Any> {
+        self.map.get(key)
+    }
+
+    /// Determines if the map contains the specified key.
+    #[inline]
+    pub fn contains_key(&self, key: &str) -> bool {
+        self.map.contains_key(key)
+    }
+
+    /// Inserts a new entry into the map, returning the old value corresponding to the key.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the value cannot be serialized into an [`Any`].
+    #[inline]
+    pub fn insert<V>(&mut self, key: &'static str, value: V) -> Option<Any>
+    where
+        V: Serialize,
+    {
+        let value = Any::new(value).expect("value failed to serialize");
+        Arc::make_mut(&mut self.map).insert(key, value)
+    }
+
+    /// Removes an entry from the map, returning its value.
+    #[inline]
+    pub fn remove(&mut self, key: &str) -> Option<Any> {
+        Arc::make_mut(&mut self.map).remove(key)
+    }
+
+    /// Returns an iterator over the entries in the map.
+    #[inline]
+    pub fn iter(&self) -> Iter<'_> {
+        Iter {
+            it: self.map.iter(),
+        }
+    }
+}
+
+impl<'a> IntoIterator for &'a Map {
+    type Item = (&'static str, &'a Any);
+
+    type IntoIter = Iter<'a>;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+/// An iterator over the entries in a [`Map`].
 pub struct Iter<'a> {
     it: hash_map::Iter<'a, &'static str, Any>,
 }
@@ -162,13 +211,41 @@ impl ExactSizeIterator for Iter<'_> {
     }
 }
 
-/// The guard type returned by [`with`].
-pub struct WithGuard<'a> {
-    snapshot: &'a mut Snapshot,
+/// A portable snapshot of the MDC.
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
+pub struct Snapshot {
+    safe: Map,
+    unsafe_: Map,
 }
 
-impl Drop for WithGuard<'_> {
-    fn drop(&mut self) {
-        MDC.with(|v| mem::swap(&mut *v.borrow_mut(), self.snapshot));
+impl Snapshot {
+    /// Returns a new, empty snapshot.
+    #[inline]
+    pub fn new() -> Self {
+        Snapshot::default()
+    }
+
+    /// Returns a shared reference to the safe entries in the snapshot.
+    #[inline]
+    pub fn safe(&self) -> &Map {
+        &self.safe
+    }
+
+    /// Returns a mutable reference to the safe entries in the snapshot.
+    #[inline]
+    pub fn safe_mut(&mut self) -> &mut Map {
+        &mut self.safe
+    }
+
+    /// Returns a shared reference to the unsafe entries in the snapshot.
+    #[inline]
+    pub fn unsafe_(&self) -> &Map {
+        &self.unsafe_
+    }
+
+    /// Returns a shared reference to the unsafe entries in the snapshot.
+    #[inline]
+    pub fn unsafe_mut(&mut self) -> &mut Map {
+        &mut self.unsafe_
     }
 }
