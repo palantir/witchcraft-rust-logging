@@ -1,6 +1,6 @@
 [package]
 name = "witchcraft-log"
-version = "0.3.2"
+version = "1.0.0"
 authors = ["Steven Fackler <sfackler@palantir.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -9,8 +9,8 @@ repository = "https://github.com/palantir/witchcraft-rust-logging"
 categories = ["development-tools::debugging"]
 
 [dependencies]
-conjure-error = "0.7"
-conjure-object = "0.7"
+conjure-error = "1"
+conjure-object = "1"
 erased-serde = "0.3"
 lazycell = "1.0"
 log = "0.4"
