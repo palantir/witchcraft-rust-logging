@@ -64,7 +64,6 @@
 //!
 //! Even when an application is using `witchcraft-log`, many of its dependencies may still use the `log` crate. The
 //! `bridge` module provides functionality to forward records from the `log` crate to `witchcraft-log`.
-#![doc(html_root_url = "https://docs.rs/witchcraft-log/0.3")]
 #![warn(missing_docs)]
 
 pub use crate::level::*;
