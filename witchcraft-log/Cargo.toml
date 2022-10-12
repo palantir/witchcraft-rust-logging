@@ -9,7 +9,7 @@ repository = "https://github.com/palantir/witchcraft-rust-logging"
 categories = ["development-tools::debugging"]
 
 [dependencies]
-conjure-error = "2"
+conjure-error = "3"
 conjure-object = "2"
 erased-serde = "0.3"
 lazycell = "1.0"
