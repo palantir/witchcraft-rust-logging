@@ -34,16 +34,16 @@ impl Log for TestLogger {
             target: record.target().to_string(),
             file: record.file().map(|s| s.to_string()),
             line: record.line(),
-            message: record.message(),
+            message: record.message().to_string(),
             safe_params: record
                 .safe_params()
                 .iter()
-                .map(|(k, v)| (*k, serde_value::to_value(v).unwrap()))
+                .map(|(k, v)| (k.to_string(), serde_value::to_value(v).unwrap()))
                 .collect(),
             unsafe_params: record
                 .unsafe_params()
                 .iter()
-                .map(|(k, v)| (*k, serde_value::to_value(v).unwrap()))
+                .map(|(k, v)| (k.to_string(), serde_value::to_value(v).unwrap()))
                 .collect(),
             error: record.error().map(|e| e.cause().to_string()),
         };
@@ -58,9 +58,9 @@ struct TestRecord {
     target: String,
     file: Option<String>,
     line: Option<u32>,
-    message: &'static str,
-    safe_params: Vec<(&'static str, Value)>,
-    unsafe_params: Vec<(&'static str, Value)>,
+    message: String,
+    safe_params: Vec<(String, Value)>,
+    unsafe_params: Vec<(String, Value)>,
     error: Option<String>,
 }
 
@@ -105,23 +105,29 @@ fn params() {
 
     assert_eq!(
         records[0].safe_params,
-        &[("safe_param", Value::String("foobar".to_string()))],
+        &[(
+            "safe_param".to_string(),
+            Value::String("foobar".to_string())
+        )],
     );
     assert_eq!(records[0].unsafe_params, &[]);
 
     assert_eq!(records[1].safe_params, &[]);
     assert_eq!(
         records[1].unsafe_params,
-        &[("unsafe_param", Value::I32(15))],
+        &[("unsafe_param".to_string(), Value::I32(15))],
     );
 
     assert_eq!(
         records[2].safe_params,
-        &[("safe_param", Value::String("foobar".to_string()))],
+        &[(
+            "safe_param".to_string(),
+            Value::String("foobar".to_string())
+        )],
     );
     assert_eq!(
         records[2].unsafe_params,
-        &[("unsafe_param", Value::I32(15))],
+        &[("unsafe_param".to_string(), Value::I32(15))],
     );
 }
 
@@ -155,7 +161,10 @@ fn bridge() {
     assert_eq!(records[0].safe_params, &[]);
     assert_eq!(
         records[0].unsafe_params,
-        &[("message", Value::String("foobar 123".to_string()))],
+        &[(
+            "message".to_string(),
+            Value::String("foobar 123".to_string())
+        )],
     );
     assert_eq!(records[0].error, None);
 

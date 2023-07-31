@@ -30,7 +30,7 @@
 //! Parameters can be arbitrary `serde`-serializable values. Note, however, that loggers may commonly serialize
 //! parameters to JSON, so values that cannot be serialized into JSON are not recommended.
 //!
-//! All dynamic information in the log record should be represented via parameters. In fact, Witchcraft-log requires the
+//! All dynamic information in the log record should be represented via parameters. In fact, witchcraft-log requires the
 //! log message to be a static string - no interpolation of any kind can be performed. This means that the message
 //! itself can always be considered safe.
 //!

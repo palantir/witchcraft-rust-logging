@@ -92,9 +92,9 @@ pub struct Record<'a> {
     metadata: Metadata<'a>,
     file: Option<&'a str>,
     line: Option<u32>,
-    message: &'static str,
-    safe_params: &'a [(&'static str, &'a dyn Serialize)],
-    unsafe_params: &'a [(&'static str, &'a dyn Serialize)],
+    message: &'a str,
+    safe_params: &'a [(&'a str, &'a dyn Serialize)],
+    unsafe_params: &'a [(&'a str, &'a dyn Serialize)],
     error: Option<&'a Error>,
 }
 
@@ -137,19 +137,19 @@ impl<'a> Record<'a> {
 
     /// Returns the record's message.
     #[inline]
-    pub fn message(&self) -> &'static str {
+    pub fn message(&self) -> &'a str {
         self.message
     }
 
     /// Returns the record's safe-loggable parameters.
     #[inline]
-    pub fn safe_params(&self) -> &'a [(&'static str, &dyn Serialize)] {
+    pub fn safe_params(&self) -> &'a [(&str, &dyn Serialize)] {
         self.safe_params
     }
 
     /// Returns the record's unsafe-loggable parameters.
     #[inline]
-    pub fn unsafe_params(&self) -> &'a [(&'static str, &dyn Serialize)] {
+    pub fn unsafe_params(&self) -> &'a [(&str, &dyn Serialize)] {
         self.unsafe_params
     }
 
@@ -224,7 +224,7 @@ impl<'a> RecordBuilder<'a> {
     ///
     /// Defaults to `""`.
     #[inline]
-    pub fn message(&mut self, message: &'static str) -> &mut RecordBuilder<'a> {
+    pub fn message(&mut self, message: &'a str) -> &mut RecordBuilder<'a> {
         self.0.message = message;
         self
     }
@@ -235,7 +235,7 @@ impl<'a> RecordBuilder<'a> {
     #[inline]
     pub fn safe_params(
         &mut self,
-        safe_params: &'a [(&'static str, &dyn Serialize)],
+        safe_params: &'a [(&str, &dyn Serialize)],
     ) -> &mut RecordBuilder<'a> {
         self.0.safe_params = safe_params;
         self
@@ -245,7 +245,7 @@ impl<'a> RecordBuilder<'a> {
     #[inline]
     pub fn unsafe_params(
         &mut self,
-        unsafe_params: &'a [(&'static str, &dyn Serialize)],
+        unsafe_params: &'a [(&str, &dyn Serialize)],
     ) -> &mut RecordBuilder<'a> {
         self.0.unsafe_params = unsafe_params;
         self
