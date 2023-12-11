@@ -143,7 +143,8 @@ fn bridge() {
     let _ = log::set_logger(&BridgedLogger);
     bridge::set_max_level(LevelFilter::Trace);
 
-    log::info!("foobar {}", 123);
+    let n = 123;
+    log::info!("foobar {n}");
     let records = get_records();
     assert_eq!(records.len(), 1);
 
