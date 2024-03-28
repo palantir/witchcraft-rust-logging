@@ -17,11 +17,15 @@
 //! contents of the MDC in service logs.
 use conjure_object::Any;
 use once_cell::sync::Lazy;
+use pin_project::{pin_project, pinned_drop};
 use serde::Serialize;
 use std::cell::RefCell;
 use std::collections::{hash_map, HashMap};
+use std::future::Future;
 use std::mem;
+use std::pin::Pin;
 use std::sync::Arc;
+use std::task::{Context, Poll};
 
 static EMPTY: Lazy<Map> = Lazy::new(|| Map {
     map: Arc::new(HashMap::new()),
@@ -89,6 +93,22 @@ pub fn set(snapshot: Snapshot) -> Snapshot {
 /// Swaps the MDC with a snapshot in-place.
 pub fn swap(snapshot: &mut Snapshot) {
     MDC.with(|v| mem::swap(&mut *v.borrow_mut(), snapshot));
+}
+
+/// Wraps a future with a layer that maintains the MDC across polls.
+///
+/// The future will begin executing with the MDC state at the time this function is called, and
+/// updates to the MDC within calls to `poll` will be propagated forward.
+pub fn bind<F>(future: F) -> Bind<F> {
+    Bind {
+        future: Some(future),
+        snapshot: snapshot(),
+    }
+}
+
+/// Creates a guard object which will reset the MDC to the state it was previously in on drop.
+pub fn scope() -> Scope {
+    Scope { old: snapshot() }
 }
 
 /// A map of MDC entries.
@@ -247,5 +267,54 @@ impl Snapshot {
     #[inline]
     pub fn unsafe_mut(&mut self) -> &mut Map {
         &mut self.unsafe_
+    }
+}
+
+/// A guard object which resets the MDC to an earlier state when it drops.
+pub struct Scope {
+    old: Snapshot,
+}
+
+impl Drop for Scope {
+    fn drop(&mut self) {
+        swap(&mut self.old);
+    }
+}
+
+/// A future which manages the MDC across polls to a delegate.
+#[pin_project(PinnedDrop)]
+pub struct Bind<F> {
+    #[pin]
+    future: Option<F>,
+    snapshot: Snapshot,
+}
+
+#[pinned_drop]
+impl<F> PinnedDrop for Bind<F> {
+    fn drop(self: Pin<&mut Self>) {
+        let mut this = self.project();
+        let _guard = Guard(this.snapshot);
+        this.future.set(None);
+    }
+}
+
+impl<F> Future for Bind<F>
+where
+    F: Future,
+{
+    type Output = F::Output;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.project();
+        let _guard = Guard(this.snapshot);
+        this.future.as_pin_mut().unwrap().poll(cx)
+    }
+}
+
+struct Guard<'a>(&'a mut Snapshot);
+
+impl Drop for Guard<'_> {
+    fn drop(&mut self) {
+        swap(self.0);
     }
 }

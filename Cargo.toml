@@ -1,5 +1,3 @@
 [workspace]
-members = [
-    "witchcraft-log",
-    "witchcraft-metrics",
-]
+resolver = "2"
+members = ["witchcraft-log", "witchcraft-metrics"]
