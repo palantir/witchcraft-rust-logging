@@ -15,6 +15,7 @@ erased-serde = "0.4"
 lazycell = "1.0"
 log = "0.4"
 once_cell = "1"
+pin-project = "1.1.5"
 serde = "1.0"
 
 [dev-dependencies]
