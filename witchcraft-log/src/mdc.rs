@@ -293,7 +293,7 @@ pub struct Bind<F> {
 impl<F> PinnedDrop for Bind<F> {
     fn drop(self: Pin<&mut Self>) {
         let mut this = self.project();
-        let _guard = Guard(this.snapshot);
+        let _guard = scope_with(this.snapshot);
         this.future.set(None);
     }
 }
@@ -306,15 +306,22 @@ where
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.project();
-        let _guard = Guard(this.snapshot);
+        let _guard = scope_with(this.snapshot);
         this.future.as_pin_mut().unwrap().poll(cx)
     }
 }
 
-struct Guard<'a>(&'a mut Snapshot);
+fn scope_with(snapshot: &mut Snapshot) -> ScopeWith<'_> {
+    swap(snapshot);
+    ScopeWith { snapshot }
+}
 
-impl Drop for Guard<'_> {
+struct ScopeWith<'a> {
+    snapshot: &'a mut Snapshot,
+}
+
+impl Drop for ScopeWith<'_> {
     fn drop(&mut self) {
-        swap(self.0);
+        swap(self.snapshot);
     }
 }
