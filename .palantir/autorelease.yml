@@ -1,2 +1,4 @@
+intoto:
+  disable: true
 options:
   package_delimiter: "-"
