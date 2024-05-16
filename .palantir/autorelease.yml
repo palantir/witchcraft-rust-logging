@@ -1,0 +1,5 @@
+version: 3
+intoto:
+  disable: true
+options:
+  package_delimiter: "-"
