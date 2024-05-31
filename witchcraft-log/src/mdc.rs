@@ -311,6 +311,7 @@ where
     }
 }
 
+/// Sets the MDC state to the snapshot, resetting it to the state it was previously on drop.
 fn scope_with(snapshot: &mut Snapshot) -> ScopeWith<'_> {
     swap(snapshot);
     ScopeWith { snapshot }
