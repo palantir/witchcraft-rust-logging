@@ -18,7 +18,7 @@ use serde_value::Value;
 use std::cell::RefCell;
 
 thread_local! {
-    static RECORDS: RefCell<Vec<TestRecord>> = RefCell::new(vec![]);
+    static RECORDS: RefCell<Vec<TestRecord>> = const { RefCell::new(vec![]) };
 }
 
 struct TestLogger;

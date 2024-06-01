@@ -326,3 +326,48 @@ impl Drop for ScopeWith<'_> {
         swap(self.snapshot);
     }
 }
+
+#[cfg(test)]
+mod test {
+    use conjure_object::Any;
+
+    use crate::mdc;
+
+    #[test]
+    fn scope() {
+        mdc::clear();
+
+        mdc::insert_safe("foo", "bar");
+        let guard = mdc::scope();
+        mdc::insert_safe("foo", "baz");
+        assert_eq!(
+            mdc::snapshot().safe().get("foo").unwrap(),
+            &Any::new("baz").unwrap(),
+        );
+
+        drop(guard);
+        assert_eq!(
+            mdc::snapshot().safe().get("foo").unwrap(),
+            &Any::new("bar").unwrap(),
+        );
+    }
+
+    #[test]
+    fn bind() {
+        mdc::clear();
+
+        mdc::insert_safe("foo", "bar");
+        futures_executor::block_on(mdc::bind(async {
+            mdc::insert_safe("foo", "baz");
+            assert_eq!(
+                mdc::snapshot().safe().get("foo").unwrap(),
+                &Any::new("baz").unwrap(),
+            );
+        }));
+
+        assert_eq!(
+            mdc::snapshot().safe().get("foo").unwrap(),
+            &Any::new("bar").unwrap(),
+        );
+    }
+}
