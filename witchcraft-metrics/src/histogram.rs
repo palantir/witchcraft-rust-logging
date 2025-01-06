@@ -66,6 +66,7 @@ impl Histogram {
 mod test {
     use crate::{Histogram, Reservoir, Snapshot};
     use std::sync::atomic::{AtomicI64, Ordering};
+    use std::sync::Arc;
 
     struct TestReservoir(AtomicI64);
 
@@ -99,6 +100,12 @@ mod test {
         }
 
         fn stddev(&self) -> f64 {
+            unimplemented!()
+        }
+
+        fn exemplars<'a>(
+            &'a self,
+        ) -> Box<dyn Iterator<Item = (i64, &'a Arc<dyn crate::Exemplar>)> + 'a> {
             unimplemented!()
         }
     }

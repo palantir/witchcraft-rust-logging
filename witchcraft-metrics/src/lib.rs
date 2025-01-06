@@ -57,6 +57,7 @@
 
 pub use crate::clock::*;
 pub use crate::counter::*;
+pub use crate::exemplar::*;
 pub use crate::gauge::*;
 pub use crate::histogram::*;
 pub use crate::meter::*;
@@ -67,6 +68,7 @@ pub use crate::timer::*;
 
 mod clock;
 mod counter;
+mod exemplar;
 mod gauge;
 mod histogram;
 mod meter;
