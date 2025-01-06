@@ -87,13 +87,11 @@ impl MetricRegistry {
 
     /// Sets the provider used to associate measurements with [`Exemplar`]s for new metrics created by the registry.
     #[inline]
-    pub fn set_exemplar_provider<T>(
+    pub fn set_exemplar_provider(
         &mut self,
-        exemplar_provider: impl Fn() -> Option<T> + 'static + Sync + Send,
-    ) where
-        T: Exemplar,
-    {
-        self.exemplar_provider = Arc::new(move || exemplar_provider().map(|e| Arc::new(e) as _))
+        exemplar_provider: Arc<dyn Fn() -> Option<Arc<dyn Exemplar>> + Sync + Send>,
+    ) {
+        self.exemplar_provider = exemplar_provider;
     }
 
     /// Returns a reference to the [`Exemplar`] provider used for new metrics created by the registry.
