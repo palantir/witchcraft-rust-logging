@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use crate::{
-    Clock, Counter, ExponentiallyDecayingReservoir, Gauge, Histogram, Meter, MetricId, Timer,
+    Clock, Counter, Exemplar, ExponentiallyDecayingReservoir, Gauge, Histogram, Meter, MetricId,
+    Timer,
 };
 use parking_lot::Mutex;
 use std::collections::hash_map::Entry;
@@ -50,6 +51,7 @@ pub enum Metric {
 pub struct MetricRegistry {
     metrics: Mutex<Arc<HashMap<Arc<MetricId>, Metric>>>,
     clock: Arc<dyn Clock>,
+    exemplar_provider: Arc<dyn Fn() -> Option<Arc<dyn Exemplar>> + Sync + Send>,
 }
 
 impl Default for MetricRegistry {
@@ -57,6 +59,7 @@ impl Default for MetricRegistry {
         MetricRegistry {
             metrics: Mutex::new(Arc::new(HashMap::new())),
             clock: crate::SYSTEM_CLOCK.clone(),
+            exemplar_provider: Arc::new(|| None),
         }
     }
 }
@@ -80,6 +83,23 @@ impl MetricRegistry {
     #[inline]
     pub fn clock(&self) -> &Arc<dyn Clock> {
         &self.clock
+    }
+
+    /// Sets the provider used to associate measurements with [`Exemplar`]s for new metrics created by the registry.
+    #[inline]
+    pub fn set_exemplar_provider<T>(
+        &mut self,
+        exemplar_provider: impl Fn() -> Option<T> + 'static + Sync + Send,
+    ) where
+        T: Exemplar,
+    {
+        self.exemplar_provider = Arc::new(move || exemplar_provider().map(|e| Arc::new(e) as _))
+    }
+
+    /// Returns a reference to the [`Exemplar`] provider used for new metrics created by the registry.
+    #[inline]
+    pub fn exemplar_provider(&self) -> &Arc<dyn Fn() -> Option<Arc<dyn Exemplar>> + Sync + Send> {
+        &self.exemplar_provider
     }
 
     /// Returns the counter with the specified ID, using make_counter to create it if absent.
@@ -235,7 +255,12 @@ impl MetricRegistry {
         T: Into<MetricId>,
     {
         self.histogram_with(id, || {
-            Histogram::new(ExponentiallyDecayingReservoir::new_with(self.clock.clone()))
+            Histogram::new(
+                ExponentiallyDecayingReservoir::builder()
+                    .clock(self.clock.clone())
+                    .exemplar_provider(self.exemplar_provider.clone())
+                    .build(),
+            )
         })
     }
 
@@ -273,7 +298,10 @@ impl MetricRegistry {
     {
         self.timer_with(id, || {
             Timer::new_with(
-                ExponentiallyDecayingReservoir::new_with(self.clock.clone()),
+                ExponentiallyDecayingReservoir::builder()
+                    .clock(self.clock.clone())
+                    .exemplar_provider(self.exemplar_provider.clone())
+                    .build(),
                 self.clock.clone(),
             )
         })
@@ -331,7 +359,7 @@ impl<'a> Iterator for MetricsIter<'a> {
     }
 }
 
-impl<'a> ExactSizeIterator for MetricsIter<'a> {}
+impl ExactSizeIterator for MetricsIter<'_> {}
 
 #[cfg(test)]
 mod test {

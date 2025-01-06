@@ -1,4 +1,4 @@
-// Copyright 2019 Palantir Technologies, Inc.
+// Copyright 2024 Palantir Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,47 +11,17 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use crate::Clock;
+
+//! A reservoir which exponentially weights in favor of recent values.
+
+use crate::{Clock, Exemplar, Reservoir, Snapshot};
 use exponential_decay_histogram::ExponentialDecayHistogram;
 use parking_lot::Mutex;
 use std::sync::Arc;
 
-/// A statistically representative subset of a set of values.
-pub trait Reservoir: 'static + Sync + Send {
-    /// Adds a value to the reservoir.
-    fn update(&self, value: i64);
-
-    /// Returns a snapshot of statistics about the values in the reservoir.
-    fn snapshot(&self) -> Box<dyn Snapshot>;
-}
-
-/// Statistics about a set of values.
-pub trait Snapshot: 'static + Sync + Send {
-    /// Returns the value at the specified quantile (from 0 to 1 inclusive), or 0 if empty.
-    ///
-    /// For example, `snapshot.value(0.5)` returns the median value.
-    ///
-    /// # Panics
-    ///
-    /// Panics if quantile is less than 0 or greater than 1.
-    fn value(&self, quantile: f64) -> f64;
-
-    /// Returns the maximum value in the snapshot, or 0 if empty.
-    fn max(&self) -> i64;
-
-    /// Returns the minimum value in the snapshot, or 0 if empty.
-    fn min(&self) -> i64;
-
-    /// Returns the average value in the snapshot, or 0 if empty.
-    fn mean(&self) -> f64;
-
-    /// Returns the standard deviation of the values in the snapshot.
-    fn stddev(&self) -> f64;
-}
-
 /// A reservoir which exponentially weights in favor of recent values.
 pub struct ExponentiallyDecayingReservoir {
-    histogram: Mutex<ExponentialDecayHistogram>,
+    histogram: Mutex<ExponentialDecayHistogram<Option<Arc<dyn Exemplar>>>>,
     clock: Arc<dyn Clock>,
 }
 
@@ -64,14 +34,59 @@ impl Default for ExponentiallyDecayingReservoir {
 impl ExponentiallyDecayingReservoir {
     /// Creates a new reservoir with a [`SystemClock`](crate::SystemClock).
     pub fn new() -> Self {
-        Self::new_with(crate::SYSTEM_CLOCK.clone())
+        Self::builder().build()
+    }
+
+    /// Creates a new builder.
+    pub fn builder() -> Builder {
+        Builder {
+            clock: crate::SYSTEM_CLOCK.clone(),
+            exemplar_provider: Arc::new(|| None),
+        }
     }
 
     /// Creates a new reservoir using the provided [`Clock`] as its time source.
+    #[deprecated(note = "Use ExponentiallyDecayingReservoir::builder", since = "1.0.2")]
     pub fn new_with(clock: Arc<dyn Clock>) -> Self {
+        Self::builder().clock(clock).build()
+    }
+}
+
+/// A builder for `[ExponentiallyDecayingReservoir]`s.
+pub struct Builder {
+    clock: Arc<dyn Clock>,
+    exemplar_provider: Arc<dyn Fn() -> Option<Arc<dyn Exemplar>> + Sync + Send>,
+}
+
+impl Builder {
+    /// Sets the [`Clock`] used as the reservoir's time source.
+    #[inline]
+    pub fn clock(mut self, clock: Arc<dyn Clock>) -> Self {
+        self.clock = clock;
+        self
+    }
+
+    /// Sets the provider used to associate [`Exemplar`]s with each measurement.
+    #[inline]
+    pub fn exemplar_provider(
+        mut self,
+        exemplar_provider: Arc<dyn Fn() -> Option<Arc<dyn Exemplar>> + Sync + Send>,
+    ) -> Self {
+        self.exemplar_provider = exemplar_provider;
+        self
+    }
+
+    /// Creates the reservoir.
+    #[inline]
+    pub fn build(self) -> ExponentiallyDecayingReservoir {
         ExponentiallyDecayingReservoir {
-            histogram: Mutex::new(ExponentialDecayHistogram::builder().at(clock.now()).build()),
-            clock,
+            histogram: Mutex::new(
+                ExponentialDecayHistogram::builder()
+                    .at(self.clock.now())
+                    .exemplar_provider(move || (self.exemplar_provider)())
+                    .build(),
+            ),
+            clock: self.clock,
         }
     }
 }
@@ -86,7 +101,7 @@ impl Reservoir for ExponentiallyDecayingReservoir {
     }
 }
 
-impl Snapshot for exponential_decay_histogram::Snapshot {
+impl Snapshot for exponential_decay_histogram::Snapshot<Option<Arc<dyn Exemplar>>> {
     fn value(&self, quantile: f64) -> f64 {
         self.value(quantile) as f64
     }
@@ -106,12 +121,20 @@ impl Snapshot for exponential_decay_histogram::Snapshot {
     fn stddev(&self) -> f64 {
         self.stddev()
     }
+
+    fn exemplars<'a>(&'a self) -> Box<dyn Iterator<Item = (i64, &'a Arc<dyn Exemplar>)> + 'a> {
+        Box::new(
+            self.exemplars()
+                .filter_map(|(value, exemplar)| exemplar.as_ref().map(|e| (value, e))),
+        )
+    }
 }
 
 #[cfg(test)]
 #[allow(clippy::float_cmp)]
 mod test {
-    use crate::{ExponentiallyDecayingReservoir, Reservoir};
+    use crate::exponentially_decaying::ExponentiallyDecayingReservoir;
+    use crate::Reservoir;
 
     #[test]
     fn exponential_basic() {

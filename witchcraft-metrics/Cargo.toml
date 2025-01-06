@@ -2,7 +2,7 @@
 name = "witchcraft-metrics"
 version = "1.0.1"
 authors = ["Steven Fackler <sfackler@palantir.com>"]
-edition = "2018"
+edition = "2021"
 license = "Apache-2.0"
 description = "A general-purpose metrics library"
 repository = "https://github.com/palantir/witchcraft-rust-logging"

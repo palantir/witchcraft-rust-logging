@@ -1,3 +1,6 @@
 [workspace]
 resolver = "2"
 members = ["witchcraft-log", "witchcraft-metrics"]
+
+[patch.crates-io]
+exponential-decay-histogram = { git = "https://github.com/sfackler/exponential-decay-histogram", branch = "exemplars" }
