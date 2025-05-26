@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "witchcraft-log",
+    "witchcraft-log", "witchcraft-log-util",
     "witchcraft-logging-api",
     "witchcraft-metrics",
 ]
