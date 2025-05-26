@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //! Utilities for Witchcraft logger implementations.
+#![warn(missing_docs)]
 
+pub mod filter;
 pub mod mdc;
-
 pub mod service;

@@ -16,7 +16,6 @@
 //! An MDC is a thread local map containing extra parameters. Witchcraft logging implementations should include the
 //! contents of the MDC in service logs.
 use conjure_object::Any;
-use once_cell::sync::Lazy;
 use pin_project::{pin_project, pinned_drop};
 use serde::Serialize;
 use std::cell::RefCell;
@@ -24,12 +23,10 @@ use std::collections::{hash_map, HashMap};
 use std::future::Future;
 use std::mem;
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 use std::task::{Context, Poll};
 
-static EMPTY: Lazy<Map> = Lazy::new(|| Map {
-    map: Arc::new(HashMap::new()),
-});
+static EMPTY: OnceLock<Map> = OnceLock::new();
 
 thread_local! {
     static MDC: RefCell<Snapshot> = RefCell::new(Snapshot::new());
@@ -120,7 +117,11 @@ pub struct Map {
 impl Default for Map {
     #[inline]
     fn default() -> Self {
-        EMPTY.clone()
+        EMPTY
+            .get_or_init(|| Map {
+                map: Arc::new(HashMap::new()),
+            })
+            .clone()
     }
 }
 

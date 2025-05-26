@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use crate::{LevelFilter, Metadata, Record};
-use lazycell::AtomicLazyCell;
 use std::error::Error;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::OnceLock;
 use std::{fmt, mem};
 
 /// A trait encapsulating the operations required of a logger.
@@ -47,20 +47,32 @@ impl Log for NopLogger {
     fn flush(&self) {}
 }
 
-static LOGGER: AtomicLazyCell<&'static dyn Log> = AtomicLazyCell::NONE;
+static LOGGER: OnceLock<&'static dyn Log> = OnceLock::new();
 
-/// Sets the global logger.
+/// Sets the global logger to a `&'static dyn Log`.
 ///
 /// The global logger can only be set once. Further calls will return an error.
 pub fn set_logger(logger: &'static dyn Log) -> Result<(), SetLoggerError> {
-    LOGGER.fill(logger).map_err(|_| SetLoggerError(()))
+    LOGGER.set(logger).map_err(|_| SetLoggerError(()))
+}
+
+/// Sets the global logger to a `Box<dyn Log>`.
+///
+/// The global logger can only be set once. Further calls will return an error.
+pub fn set_boxed_logger(logger: Box<dyn Log>) -> Result<(), SetLoggerError> {
+    let mut logger = Some(logger);
+    LOGGER.get_or_init(|| Box::leak(logger.take().unwrap()));
+    match logger {
+        Some(_) => Err(SetLoggerError(())),
+        None => Ok(()),
+    }
 }
 
 /// Returns the global logger.
 ///
 /// If one has not been set, a no-op implementation will be returned.
 pub fn logger() -> &'static dyn Log {
-    LOGGER.get().unwrap_or(&NopLogger)
+    LOGGER.get().map_or(&NopLogger, |l| *l)
 }
 
 /// An error trying to set the logger when one is already installed.

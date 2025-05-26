@@ -34,7 +34,7 @@ pub fn from_record(record: &Record<'_>) -> ServiceLogV1 {
     };
 
     let mut message = ServiceLogV1::builder()
-        .type_("service.")
+        .type_("service.1")
         .level(level)
         .time(Utc::now())
         .message(record.message())
