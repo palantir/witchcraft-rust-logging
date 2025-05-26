@@ -247,7 +247,7 @@ impl<'de> Deserialize<'de> for Level {
     {
         struct LevelIdentifier;
 
-        impl<'de> Visitor<'de> for LevelIdentifier {
+        impl Visitor<'_> for LevelIdentifier {
             type Value = Level;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -323,7 +323,7 @@ impl<'de> Deserialize<'de> for LevelFilter {
     {
         struct LevelFilterIdentifier;
 
-        impl<'de> Visitor<'de> for LevelFilterIdentifier {
+        impl Visitor<'_> for LevelFilterIdentifier {
             type Value = LevelFilter;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
