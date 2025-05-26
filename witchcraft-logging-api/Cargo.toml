@@ -1,0 +1,13 @@
+[package]
+name = "witchcraft-logging-api"
+version = "1.0.0"
+edition = "2024"
+license = "Apache-2.0"
+description = "Witchcraft log API types"
+repository = "https://github.com/palantir/witchcraft-rust-logging"
+
+[build-dependencies]
+conjure-codegen = "4.10.0"
+
+[dependencies]
+conjure-object = "4.10.0"
