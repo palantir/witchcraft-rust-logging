@@ -1,6 +1,6 @@
 [package]
 name = "witchcraft-env-logger"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 license = "Apache-2.0"
 description = "A simple Witchcraft logger that can be configured with an environment variable"
@@ -9,5 +9,5 @@ categories = ["development-tools::debugging"]
 
 [dependencies]
 conjure-serde = "4.10.0"
-witchcraft-log = { version = "4.0.0", path = "../witchcraft-log" }
+witchcraft-log = { version = "4.1.0", path = "../witchcraft-log" }
 witchcraft-log-util = { version = "1.0.0", path = "../witchcraft-log-util" }

@@ -10,5 +10,5 @@ repository = "https://github.com/palantir/witchcraft-rust-logging"
 conjure-error = "4.10.0"
 conjure-object = "4.10.0"
 sequence_trie = "0.3.6"
-witchcraft-log = { version = "4.0.0", path = "../witchcraft-log" }
+witchcraft-log = { version = "4.1.0", path = "../witchcraft-log" }
 witchcraft-logging-api = { version = "1.0.0", path = "../witchcraft-logging-api" }
