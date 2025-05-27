@@ -331,7 +331,7 @@ impl<'a> Iterator for MetricsIter<'a> {
     }
 }
 
-impl<'a> ExactSizeIterator for MetricsIter<'a> {}
+impl ExactSizeIterator for MetricsIter<'_> {}
 
 #[cfg(test)]
 mod test {

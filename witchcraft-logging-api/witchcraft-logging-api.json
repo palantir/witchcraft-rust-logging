@@ -1,0 +1,2774 @@
+{
+  "version" : 1,
+  "errors" : [ ],
+  "types" : [ {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "Annotation",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "timestamp",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "SAFELONG"
+        },
+        "docs" : "Time annotation was created (epoch microsecond value)\n"
+      }, {
+        "fieldName" : "value",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Value encapsulated by this annotation\n"
+      }, {
+        "fieldName" : "endpoint",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "Endpoint",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      } ],
+      "docs" : "A Zipkin-compatible Annotation object."
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "AuditLogV2",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "\"audit.2\""
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available). This is the most downstream caller.\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)\n"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)\n"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TraceId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Zipkin trace id (if available)\n"
+      }, {
+        "fieldName" : "otherUids",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "All users upstream of the user currently taking an action. The first element in this list is the uid of the most upstream caller. This list does not include the `uid`.\n"
+      }, {
+        "fieldName" : "origin",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Best-effort identifier of the originating machine, e.g. an IP address, a Kubernetes node identifier,\nor similar\n"
+      }, {
+        "fieldName" : "name",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Name of the audit event, e.g. PUT_FILE\n"
+      }, {
+        "fieldName" : "result",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "AuditResult",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        },
+        "docs" : "Indicates whether the request was successful or the type of failure, e.g. ERROR or UNAUTHORIZED\n"
+      }, {
+        "fieldName" : "requestParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "The parameters known at method invocation time.\n"
+      }, {
+        "fieldName" : "resultParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Information derived within a method, commonly parts of the return value.\n"
+      } ],
+      "docs" : "Definition of the audit.2 format.\n"
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "AuditLogV3",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "\"audit.3\""
+      }, {
+        "fieldName" : "deployment",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "The deployment that produced this log. Not exposed to downstream consumers."
+      }, {
+        "fieldName" : "host",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "The host of the service that produced this log."
+      }, {
+        "fieldName" : "product",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "The name of the product that produced this log."
+      }, {
+        "fieldName" : "productVersion",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "The version of the product that produced this log."
+      }, {
+        "fieldName" : "stack",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The stack that this log was generated on."
+      }, {
+        "fieldName" : "service",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The service name that produced this log."
+      }, {
+        "fieldName" : "environment",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The environment that produced this log."
+      }, {
+        "fieldName" : "producerType",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "AuditProducer",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        },
+        "docs" : "How this audit log was produced, eg. from a backend Server, frontend Client etc."
+      }, {
+        "fieldName" : "organizations",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "Organization",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "A list of organizations that have been attributed to this log.\nAttribution is typically based on the user that originated this log, and the resources that\nthey targeted.\nNot exposed to downstream consumers.\n"
+      }, {
+        "fieldName" : "eventId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "UUID"
+        },
+        "docs" : "Unique identifier for this audit log event. If there are multiple log entries associated with this\nparticular audit event, they will share the same eventId but will have different logEntryId and different\nsequenceId.\n"
+      }, {
+        "fieldName" : "logEntryId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "UUID"
+            }
+          }
+        },
+        "docs" : "Unique identifier for this audit log."
+      }, {
+        "fieldName" : "sequenceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "INTEGER"
+            }
+          }
+        },
+        "docs" : "Orders the log entries when there are multiple entries for the same event."
+      }, {
+        "fieldName" : "userAgent",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The user agent of the user that originated this log."
+      }, {
+        "fieldName" : "categories",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "All audit categories produced by this audit event.\nEach audit categories produces a set of keys that will be distributed between the request and\nresponse params.\n"
+      }, {
+        "fieldName" : "entities",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "All contextualized entities present in the request and response params of this log.\nNote: Some resources cannot be contextualized, and will not be included in this list as a result.\n"
+      }, {
+        "fieldName" : "users",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "ContextualizedUser",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "All contextualized users present in the request and response params of this log, including the top level\nUUID of this log.\n"
+      }, {
+        "fieldName" : "origins",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "All addresses attached to the request. Contains information\nfrom unreliable sources such as the X-Forwarded-For header.\n\nThis value can be spoofed.\n"
+      }, {
+        "fieldName" : "sourceOrigin",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Origin of the network request. If a request goes through a proxy,\nthis will contain the proxy''s address.\n\nThis value is verified through the TCP stack.\n"
+      }, {
+        "fieldName" : "requestParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SensitivityTaggedValue",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "The parameters known at method invocation time.\n\nNote that all keys must be known to the audit library. Typically, entries in the request and response\nparams will be dependent on the `categories` field defined above.\n",
+        "deprecated" : "Use requestFields instead.\n\nShould be translated to requestFields during emitting if requestFields is missing, by dropping the level\nfrom the SensitivityTaggedValue and directly using the payload as the value for the map.\n"
+      }, {
+        "fieldName" : "requestFields",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "The fields known at method invocation time.\n\nNote that all keys must be known to the audit library. Typically, entries in the request and result\nfields will be dependent on the `categories` field defined above.\n\nThis replaces requestParams and will take priority if present.\n"
+      }, {
+        "fieldName" : "resultParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SensitivityTaggedValue",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Information derived within a method, commonly parts of the return value.\n\nNote that all keys must be known to the audit library. Typically, entries in the request and response\nparams will be dependent on the `categories` field defined above.\n",
+        "deprecated" : "Use resultFields instead.\n\nShould be translated to resultFields during emitting if resultFields is missing, by dropping the level\nfrom the SensitivityTaggedValue and directly using the payload as the value for the map.\n"
+      }, {
+        "fieldName" : "resultFields",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Information derived within a method, commonly parts of the return value.\n\nNote that all keys must be known to the audit library. Typically, entries in the request and result\nfields will be dependent on the `categories` field defined above.\n\nThis replaces resultParams and will take priority if present.\n"
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available). This is the most downstream caller.\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)\n"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)\n"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TraceId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Zipkin trace id (if available)\n"
+      }, {
+        "fieldName" : "origin",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Best-effort identifier of the originating machine, e.g. an\nIP address, a Kubernetes node identifier, or similar.\n\nThis value can be spoofed.\n"
+      }, {
+        "fieldName" : "name",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Name of the audit event, e.g. PUT_FILE\n"
+      }, {
+        "fieldName" : "result",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "AuditResult",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        },
+        "docs" : "Indicates whether the request was successful or the type of failure, e.g. ERROR or UNAUTHORIZED\n"
+      } ]
+    }
+  }, {
+    "type" : "enum",
+    "enum" : {
+      "typeName" : {
+        "name" : "AuditProducer",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "values" : [ {
+        "value" : "SERVER"
+      }, {
+        "value" : "CLIENT"
+      } ]
+    }
+  }, {
+    "type" : "enum",
+    "enum" : {
+      "typeName" : {
+        "name" : "AuditResult",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "values" : [ {
+        "value" : "SUCCESS"
+      }, {
+        "value" : "ERROR"
+      }, {
+        "value" : "UNAUTHORIZED"
+      }, {
+        "value" : "PARTIAL",
+        "docs" : "A result that has not yet been finalized. It may be missing fields from resultParams, and it is expected that a non-partial log should occur in the future with the same event ID.\n"
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "ContextualizedUser",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "UserId",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "userName",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        }
+      }, {
+        "fieldName" : "firstName",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        }
+      }, {
+        "fieldName" : "lastName",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        }
+      }, {
+        "fieldName" : "groups",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        }
+      }, {
+        "fieldName" : "realm",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        }
+      } ]
+    }
+  }, {
+    "type" : "union",
+    "union" : {
+      "typeName" : {
+        "name" : "Diagnostic",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "union" : [ {
+        "fieldName" : "generic",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "GenericDiagnostic",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "threadDump",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "ThreadDumpV1",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "DiagnosticLogV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "\"diagnostic.1\""
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "diagnostic",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "Diagnostic",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        },
+        "docs" : "The diagnostic being logged."
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Unredacted parameters\n"
+      } ],
+      "docs" : "Definition of the diagnostic.1 format.\n"
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "Endpoint",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "serviceName",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Name of the service that generated the annotation\n"
+      }, {
+        "fieldName" : "ipv4",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "IPv4 address of the machine that generated this annotation (`xxx.xxx.xxx.xxx`)\n"
+      }, {
+        "fieldName" : "ipv6",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "IPv6 address of the machine that generated this annotation (standard hextet form)\n"
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "EventLogV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        }
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "eventName",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Dot-delimited name of event, e.g. `com.foundry.compass.api.Compass.http.ping.failures`\n"
+      }, {
+        "fieldName" : "eventType",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Type of event being represented, e.g. `gauge`, `histogram`, `counter`\n"
+      }, {
+        "fieldName" : "values",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Observations, measurements and context associated with the event\n"
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available)\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)\n"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)\n"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Unsafe metadata describing the event\n"
+      } ],
+      "docs" : "Definition of the event.1 format."
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "EventLogV2",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        }
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "eventName",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Dot-delimited name of event, e.g. `com.foundry.compass.api.Compass.http.ping.failures`\n"
+      }, {
+        "fieldName" : "values",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Observations, measurements and context associated with the event\n"
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available)\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)\n"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)\n"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TraceId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Zipkin trace id (if available)\n"
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Unsafe metadata describing the event\n"
+      }, {
+        "fieldName" : "tags",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Additional dimensions that describe the instance of the log event"
+      } ],
+      "docs" : "Definition of the event.2 format."
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "GenericDiagnostic",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "diagnosticType",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "An identifier for the type of diagnostic represented."
+      }, {
+        "fieldName" : "value",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "ANY"
+        },
+        "docs" : "Observations, measurements and context associated with the diagnostic."
+      } ]
+    }
+  }, {
+    "type" : "enum",
+    "enum" : {
+      "typeName" : {
+        "name" : "LogLevel",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "values" : [ {
+        "value" : "FATAL"
+      }, {
+        "value" : "ERROR"
+      }, {
+        "value" : "WARN"
+      }, {
+        "value" : "INFO"
+      }, {
+        "value" : "DEBUG"
+      }, {
+        "value" : "TRACE"
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "MetricLogV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        }
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "metricName",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Dot-delimited name of metric, e.g. `com.foundry.compass.api.Compass.http.ping.failures`\n"
+      }, {
+        "fieldName" : "metricType",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Type of metric being represented, e.g. `gauge`, `histogram`, `counter`\n"
+      }, {
+        "fieldName" : "values",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Observations, measurements and context associated with the metric\n"
+      }, {
+        "fieldName" : "samples",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "Sample",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "List of samples (if any) associated with the metric\n"
+      }, {
+        "fieldName" : "tags",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Additional dimensions that describe the instance of the metric\n"
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available)\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)\n"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)\n"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Unsafe metadata describing the event\n"
+      } ],
+      "docs" : "Definition of the metric.1 format."
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "Organization",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "id",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Organization RID. Not exposed to downstream consumers."
+      }, {
+        "fieldName" : "reason",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Explanation of why this organization was attributed to this log."
+      } ]
+    }
+  }, {
+    "type" : "alias",
+    "alias" : {
+      "typeName" : {
+        "name" : "OrganizationId",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "alias" : {
+        "type" : "primitive",
+        "primitive" : "STRING"
+      }
+    }
+  }, {
+    "type" : "union",
+    "union" : {
+      "typeName" : {
+        "name" : "RequestLog",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "union" : [ {
+        "fieldName" : "v1",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "RequestLogV1",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "v2",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "RequestLogV2",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "RequestLogV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        }
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "method",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "HTTP method of request\n"
+      }, {
+        "fieldName" : "protocol",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Protocol, e.g. `HTTP/1.1`, `HTTP/2`\n"
+      }, {
+        "fieldName" : "path",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Path of request. If templated, the unrendered path, e.g.: `/catalog/dataset/{datasetId}`, `/{rid}/paths/contents/{path:.*}`.\n"
+      }, {
+        "fieldName" : "pathParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Known-safe path parameters\n"
+      }, {
+        "fieldName" : "queryParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Known-safe query parameters\n"
+      }, {
+        "fieldName" : "headerParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Known-safe header parameters\n"
+      }, {
+        "fieldName" : "bodyParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Known-safe body parameters\n"
+      }, {
+        "fieldName" : "status",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "INTEGER"
+        },
+        "docs" : "HTTP status code of response\n"
+      }, {
+        "fieldName" : "requestSize",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Size of request (bytes). string to allow large numbers.\n"
+      }, {
+        "fieldName" : "responseSize",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Size of response (bytes). string to allow large numbers.\n"
+      }, {
+        "fieldName" : "duration",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "INTEGER"
+        },
+        "docs" : "Amount of time spent handling request (microseconds)\n"
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available)\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)\n"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)\n"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TraceId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Zipkin trace id (if available)\n"
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Unredacted parameters such as path, query and header parameters\n"
+      } ],
+      "docs" : "Definition of the request.1 format.\n"
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "RequestLogV2",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        }
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "method",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "HTTP method of request\n"
+      }, {
+        "fieldName" : "protocol",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Protocol, e.g. `HTTP/1.1`, `HTTP/2`\n"
+      }, {
+        "fieldName" : "path",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Path of request. If templated, the unrendered path, e.g.: `/catalog/dataset/{datasetId}`, `/{rid}/paths/contents/{path:.*}`.\n"
+      }, {
+        "fieldName" : "params",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Known-safe parameters\n"
+      }, {
+        "fieldName" : "status",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "INTEGER"
+        },
+        "docs" : "HTTP status code of response\n"
+      }, {
+        "fieldName" : "requestSize",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "SAFELONG"
+        },
+        "docs" : "Size of request (bytes)\n"
+      }, {
+        "fieldName" : "responseSize",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "SAFELONG"
+        },
+        "docs" : "Size of response (bytes)\n"
+      }, {
+        "fieldName" : "duration",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "SAFELONG"
+        },
+        "docs" : "Amount of time spent handling request (microseconds)\n"
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available)\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)\n"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)\n"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TraceId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Zipkin trace id (if available)\n"
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Unredacted parameters such as path, query and header parameters\n"
+      } ],
+      "docs" : "Definition of the request.2 format.\n"
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "Sample",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "value",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "ANY"
+        },
+        "docs" : "Exact value of this metric sample"
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        },
+        "docs" : "RFC3339Nano UTC datetime string of when the sample was taken"
+      }, {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TraceId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Zipkin trace id associated with this sample, if available"
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "SensitivityTaggedValue",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "level",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Sensitivity level of this value; must be a known level in sls-spec.\n"
+      }, {
+        "fieldName" : "payload",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "ANY"
+        }
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "ServiceLogV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "\"service.1\""
+      }, {
+        "fieldName" : "level",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "LogLevel",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        },
+        "docs" : "The logger output level. One of {FATAL,ERROR,WARN,INFO,DEBUG,TRACE} based on [log level coding guidelines](https://github.com/palantir/gradle-baseline/blob/develop/docs/best-practices/java-coding-guidelines/readme.md#log-levels)\n"
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        },
+        "docs" : "RFC3339Nano UTC datetime string when the log event was emitted"
+      }, {
+        "fieldName" : "origin",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Class or file name. May include line number."
+      }, {
+        "fieldName" : "thread",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Thread name"
+      }, {
+        "fieldName" : "message",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Log message. Palantir Java services using slf4j should not use slf4j placeholders ({}). Logs obtained from 3rd party libraries or services that use slf4j and contain slf4j placeholders will always produce `unsafeParams` with numeric indexes corresponding to the zero-indexed order of placeholders. Renderers should substitute numeric parameters from `unsafeParams` and may leave placeholders that do not match indexes as the original placeholder text.\n"
+      }, {
+        "fieldName" : "safe",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "BOOLEAN"
+            }
+          }
+        },
+        "docs" : "Describes the safety of this log event based on prior knowledge within the application which produced the message. This field should not be set to `true` without _total_ confidence that it is correct. * _empty_:  Considered unsafe unless the logging pipeline has special configuration for this `origin`. Eventually these will all be equivalent to `false`. * `true`: All safe components can be trusted. * `false`: Event is _unsafe_ and cannot be exported.\n"
+      }, {
+        "fieldName" : "params",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Known-safe parameters (redaction may be used to make params knowably safe, but is not required)."
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "User id (if available).\n"
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Session id (if available)"
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "API token id (if available)"
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Organization id (if available)"
+      }, {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TraceId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Zipkin trace id (if available)"
+      }, {
+        "fieldName" : "stacktrace",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Language-specific stack trace. Content is knowably safe. Renderers should substitute named placeholders ({name}, for name as a key) with keyed value from unsafeParams and leave non-matching keys as the original placeholder text.\n"
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Unredacted parameters"
+      }, {
+        "fieldName" : "tags",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Additional dimensions that describe the instance of the log event"
+      } ],
+      "docs" : "Definition of the service.1 format.\n"
+    }
+  }, {
+    "type" : "alias",
+    "alias" : {
+      "typeName" : {
+        "name" : "SessionId",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "alias" : {
+        "type" : "primitive",
+        "primitive" : "STRING"
+      }
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "Span",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "traceId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "16-digit hex trace identifier\n"
+      }, {
+        "fieldName" : "id",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "16-digit hex span identifier\n"
+      }, {
+        "fieldName" : "name",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Name of the span (typically the operation/RPC/method name for corresponding to this span)\n"
+      }, {
+        "fieldName" : "parentId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "16-digit hex identifer of the parent span\n"
+      }, {
+        "fieldName" : "timestamp",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "SAFELONG"
+        },
+        "docs" : "Timestamp of the start of this span (epoch microsecond value)\n"
+      }, {
+        "fieldName" : "duration",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "SAFELONG"
+        },
+        "docs" : "Duration of this span (microseconds)\n"
+      }, {
+        "fieldName" : "annotations",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "Annotation",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        }
+      }, {
+        "fieldName" : "tags",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Additional dimensions that describe the instance of the trace span\n"
+      } ],
+      "docs" : "A Zipkin-compatible Span object."
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "StackFrameV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "address",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The address of the execution point of this stack frame. This is a string because a safelong can't represent the full 64 bit address space.\n"
+      }, {
+        "fieldName" : "procedure",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The identifier of the procedure containing the execution point of this stack frame. This is a fully qualified method name in Java and a demangled symbol name in native code, for example. Note that procedure names may include unsafe information if a service is, for exmaple, running user-defined code. It must be safely redacted.\n"
+      }, {
+        "fieldName" : "file",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The name of the file containing the source location of the execution point of this stack frame. Note that file names may include unsafe information if a service is, for example, running user-defined code. It must be safely redacted.\n"
+      }, {
+        "fieldName" : "line",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "INTEGER"
+            }
+          }
+        },
+        "docs" : "The line number of the source location of the execution point of this stack frame.\n"
+      }, {
+        "fieldName" : "params",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Other frame-level information."
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "ThreadDumpV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "threads",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "ThreadInfoV1",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "Information about each of the threads in the thread dump. \"Thread\" may refer to a userland thread such as a goroutine, or an OS-level thread.\n"
+      } ]
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "ThreadInfoV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "id",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "SAFELONG"
+            }
+          }
+        },
+        "docs" : "The ID of the thread."
+      }, {
+        "fieldName" : "name",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The name of the thread. Note that thread names may include unsafe information such as the path of the HTTP request being processed. It must be safely redacted.\n"
+      }, {
+        "fieldName" : "stackTrace",
+        "type" : {
+          "type" : "list",
+          "list" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "StackFrameV1",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        },
+        "docs" : "A list of stack frames for the thread, ordered with the current frame first.\n"
+      }, {
+        "fieldName" : "params",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        },
+        "docs" : "Other thread-level information."
+      } ]
+    }
+  }, {
+    "type" : "alias",
+    "alias" : {
+      "typeName" : {
+        "name" : "TokenId",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "alias" : {
+        "type" : "primitive",
+        "primitive" : "STRING"
+      }
+    }
+  }, {
+    "type" : "alias",
+    "alias" : {
+      "typeName" : {
+        "name" : "TraceId",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "alias" : {
+        "type" : "primitive",
+        "primitive" : "STRING"
+      }
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "TraceLogV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        }
+      }, {
+        "fieldName" : "time",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "DATETIME"
+        }
+      }, {
+        "fieldName" : "uid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "UserId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        }
+      }, {
+        "fieldName" : "sid",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "SessionId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        }
+      }, {
+        "fieldName" : "tokenId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "TokenId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        }
+      }, {
+        "fieldName" : "orgId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "reference",
+              "reference" : {
+                "name" : "OrganizationId",
+                "package" : "com.palantir.witchcraft.api.logging"
+              }
+            }
+          }
+        }
+      }, {
+        "fieldName" : "unsafeParams",
+        "type" : {
+          "type" : "map",
+          "map" : {
+            "keyType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            },
+            "valueType" : {
+              "type" : "primitive",
+              "primitive" : "ANY"
+            }
+          }
+        }
+      }, {
+        "fieldName" : "span",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "Span",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      } ],
+      "docs" : "Definition of the trace.1 format.\n"
+    }
+  }, {
+    "type" : "union",
+    "union" : {
+      "typeName" : {
+        "name" : "UnionEventLog",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "union" : [ {
+        "fieldName" : "eventLog",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "EventLogV1",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "eventLogV2",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "EventLogV2",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      } ],
+      "docs" : "Union type containing log types that are logged to event.log."
+    }
+  }, {
+    "type" : "alias",
+    "alias" : {
+      "typeName" : {
+        "name" : "UserId",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "alias" : {
+        "type" : "primitive",
+        "primitive" : "STRING"
+      }
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "WitchcraftEnvelopeV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "\"envelope.1\""
+      }, {
+        "fieldName" : "deployment",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Color or other codename for the customer infra"
+      }, {
+        "fieldName" : "environment",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "prod/staging/integration etc."
+      }, {
+        "fieldName" : "environmentId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Skylab environment ID"
+      }, {
+        "fieldName" : "host",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Hostname where the log message originated"
+      }, {
+        "fieldName" : "nodeId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Skylab node ID"
+      }, {
+        "fieldName" : "service",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Skylab service name"
+      }, {
+        "fieldName" : "serviceId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Skylab service ID"
+      }, {
+        "fieldName" : "stack",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Skylab stack name"
+      }, {
+        "fieldName" : "stackId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Skylab stack ID"
+      }, {
+        "fieldName" : "product",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Artifact part of product's maven coordinate"
+      }, {
+        "fieldName" : "productVersion",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Artifact semantic version"
+      }, {
+        "fieldName" : "payload",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "ANY"
+        },
+        "docs" : "One of the Witchcraft log types; see [witchcraft-api](https://github.com/palantir/witchcraft-api) for details."
+      }, {
+        "fieldName" : "apolloEntityId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Apollo entity id"
+      }, {
+        "fieldName" : "apolloEnvironmentId",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Apollo environment id"
+      } ],
+      "docs" : "Wraps a log entry with metadata on where it is coming from and the source service that generated it.\n"
+    }
+  }, {
+    "type" : "object",
+    "object" : {
+      "typeName" : {
+        "name" : "WrappedLogV1",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "fields" : [ {
+        "fieldName" : "type",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "\"wrapped.1\""
+      }, {
+        "fieldName" : "payload",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "WrappedLogV1Payload",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "entityName",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        },
+        "docs" : "Artifact part of entity's maven coordinate"
+      }, {
+        "fieldName" : "entityVersion",
+        "type" : {
+          "type" : "primitive",
+          "primitive" : "STRING"
+        }
+      }, {
+        "fieldName" : "service",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Defaults to the wrapped log producer's Skylab service name."
+      }, {
+        "fieldName" : "serviceId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Defaults to the wrapped log producer's Skylab service ID."
+      }, {
+        "fieldName" : "stack",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Defaults to the wrapped log producer's Skylab stack name."
+      }, {
+        "fieldName" : "stackId",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "Defaults to the wrapped log producer's Skylab stack ID."
+      } ],
+      "docs" : "Wraps a log entry with entity information.\n"
+    }
+  }, {
+    "type" : "union",
+    "union" : {
+      "typeName" : {
+        "name" : "WrappedLogV1Payload",
+        "package" : "com.palantir.witchcraft.api.logging"
+      },
+      "union" : [ {
+        "fieldName" : "serviceLogV1",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "ServiceLogV1",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "requestLogV2",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "RequestLogV2",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "traceLogV1",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "TraceLogV1",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "eventLogV2",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "EventLogV2",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "metricLogV1",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "MetricLogV1",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "auditLogV2",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "AuditLogV2",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "auditLogV3",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "AuditLogV3",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      }, {
+        "fieldName" : "diagnosticLogV1",
+        "type" : {
+          "type" : "reference",
+          "reference" : {
+            "name" : "DiagnosticLogV1",
+            "package" : "com.palantir.witchcraft.api.logging"
+          }
+        }
+      } ]
+    }
+  } ],
+  "services" : [ ],
+  "extensions" : {
+    "recommended-product-dependencies" : [ ]
+  }
+}

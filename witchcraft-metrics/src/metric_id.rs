@@ -118,7 +118,7 @@ impl<'a> Iterator for TagsIter<'a> {
     }
 }
 
-impl<'a> ExactSizeIterator for TagsIter<'a> {}
+impl ExactSizeIterator for TagsIter<'_> {}
 
 #[cfg(test)]
 mod test {
