@@ -103,10 +103,9 @@ pub fn try_init() -> Result<(), SetLoggerError> {
 
             match second {
                 Some(level) => {
-                    let Ok(level) = level.parse::<LevelFilter>() else {
-                        continue;
+                    if let Ok(level) = level.parse::<LevelFilter>() {
+                        builder = builder.target_level(first, level);
                     };
-                    builder = builder.target_level(first, level);
                 }
                 None => match first.parse::<LevelFilter>() {
                     Ok(level) => builder = builder.level(level),
