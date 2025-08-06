@@ -95,7 +95,7 @@ pub fn from_record(record: &Record<'_>) -> ServiceLogV1 {
 
         let mut stacktrace = String::new();
         for trace in error.backtraces() {
-            writeln!(stacktrace, "{:?}", trace).unwrap();
+            writeln!(stacktrace, "{trace:?}").unwrap();
         }
         message = message.stacktrace(stacktrace);
 
