@@ -8,6 +8,6 @@ repository = "https://github.com/palantir/witchcraft-rust-logging"
 categories = ["development-tools::debugging"]
 
 [dependencies]
-conjure-serde = "4.10.0"
+conjure-serde = "5.0.0-rc3"
 witchcraft-log = { version = "4.1.0", path = "../witchcraft-log" }
 witchcraft-log-util = { version = "1.0.0", path = "../witchcraft-log-util" }

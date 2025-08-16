@@ -7,7 +7,7 @@ description = "Witchcraft log API types"
 repository = "https://github.com/palantir/witchcraft-rust-logging"
 
 [build-dependencies]
-conjure-codegen = "4.10.0"
+conjure-codegen = "5.0.0-rc3"
 
 [dependencies]
-conjure-object = "4.10.0"
+conjure-object = "5.0.0-rc3"
