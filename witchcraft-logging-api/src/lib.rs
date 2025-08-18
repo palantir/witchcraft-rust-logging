@@ -12,4 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 #![allow(warnings)]
-include!(concat!(env!("OUT_DIR"), "/witchcraft-logging-api/mod.rs"));
+include!(concat!(
+    env!("OUT_DIR"),
+    "/witchcraft-logging-api/objects/mod.rs"
+));
