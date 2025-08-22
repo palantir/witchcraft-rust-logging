@@ -18,7 +18,7 @@ use std::{error, thread};
 use conjure_error::ErrorKind;
 use conjure_object::Utc;
 use witchcraft_log::{Level, Record, mdc};
-use witchcraft_logging_api::{
+use witchcraft_logging_api::objects::{
     LogLevel, OrganizationId, ServiceLogV1, SessionId, TokenId, TraceId, UserId,
 };
 
@@ -95,7 +95,7 @@ pub fn from_record(record: &Record<'_>) -> ServiceLogV1 {
 
         let mut stacktrace = String::new();
         for trace in error.backtraces() {
-            writeln!(stacktrace, "{:?}", trace).unwrap();
+            writeln!(stacktrace, "{trace:?}").unwrap();
         }
         message = message.stacktrace(stacktrace);
 
