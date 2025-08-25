@@ -223,20 +223,6 @@
         },
         "docs" : "\"audit.3\""
       }, {
-        "fieldName" : "deployment",
-        "type" : {
-          "type" : "primitive",
-          "primitive" : "STRING"
-        },
-        "docs" : "The deployment that produced this log. Not exposed to downstream consumers."
-      }, {
-        "fieldName" : "host",
-        "type" : {
-          "type" : "primitive",
-          "primitive" : "STRING"
-        },
-        "docs" : "The host of the service that produced this log."
-      }, {
         "fieldName" : "product",
         "type" : {
           "type" : "primitive",
@@ -274,6 +260,30 @@
           }
         },
         "docs" : "The service name that produced this log."
+      }, {
+        "fieldName" : "host",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The host of the service that produced this log."
+      }, {
+        "fieldName" : "deployment",
+        "type" : {
+          "type" : "optional",
+          "optional" : {
+            "itemType" : {
+              "type" : "primitive",
+              "primitive" : "STRING"
+            }
+          }
+        },
+        "docs" : "The deployment that produced this log."
       }, {
         "fieldName" : "environment",
         "type" : {
