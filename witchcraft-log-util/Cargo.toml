@@ -1,6 +1,6 @@
 [package]
 name = "witchcraft-log-util"
-version = "2.0.0-rc1"
+version = "2.0.0-rc2"
 edition = "2024"
 license = "Apache-2.0"
 description = "Utilities for Witchcraft logger implementations"
@@ -11,4 +11,4 @@ conjure-error = "5.0.0-rc3"
 conjure-object = "5.0.0-rc3"
 sequence_trie = "0.3.6"
 witchcraft-log = { version = "5.0.0-rc1", path = "../witchcraft-log" }
-witchcraft-logging-api = { version = "2.0.0-rc1", path = "../witchcraft-logging-api" }
+witchcraft-logging-api = { version = "2.0.0-rc2", path = "../witchcraft-logging-api" }
