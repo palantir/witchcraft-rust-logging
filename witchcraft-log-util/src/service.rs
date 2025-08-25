@@ -18,7 +18,7 @@ use std::{error, thread};
 use conjure_error::ErrorKind;
 use conjure_object::Utc;
 use witchcraft_log::{Level, Record, mdc};
-use witchcraft_logging_api::{
+use witchcraft_logging_api::objects::{
     LogLevel, OrganizationId, ServiceLogV1, SessionId, TokenId, TraceId, UserId,
 };
 
