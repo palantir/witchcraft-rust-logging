@@ -1,3 +1,7 @@
+<p align="right">
+<a href="https://autorelease.general.dmz.palantir.tech/palantir/witchcraft-rust-logging"><img src="https://img.shields.io/badge/Perform%20an-Autorelease-success.svg" alt="Autorelease"></a>
+</p>
+
 # witchcraft-rust-logging
 
 [![CircleCI](https://circleci.com/gh/palantir/witchcraft-rust-logging.svg?style=shield)](https://circleci.com/gh/palantir/witchcraft-rust-logging)
