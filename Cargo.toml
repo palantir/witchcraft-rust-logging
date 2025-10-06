@@ -6,4 +6,5 @@ members = [
     "witchcraft-log-util",
     "witchcraft-logging-api",
     "witchcraft-metrics",
+    "witchcraft-wasm-logger",
 ]
