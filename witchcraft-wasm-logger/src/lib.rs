@@ -13,8 +13,22 @@
 // limitations under the License.
 //! A simple Witchcraft logger that can be used in a WebAssembly to log messages to browser console.
 //!
+//! Witchcraft log levels are mapped to console functions as follows:
+//!
+//! | Witchcraft| Web Console       |
+//! |------------|-------------------|
+//! | `trace!()` | `console.debug()` |
+//! | `debug!()` | `console.log()`   |
+//! | `info!()`  | `console.info()`  |
+//! | `warn!()`  | `console.warn()`  |
+//! | `error!()` | `console.error()` |
+//!
+//! This mapping is similar to the [console_log crate](https://crates.io/crates/console_log).
+//!
 //! Logs are written to standard error in the standard Witchcraft `service.1` JSON format.
 //!
+#![warn(missing_docs)]
+
 use conjure_serde::json;
 use web_sys::console;
 use witchcraft_log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
@@ -37,8 +51,8 @@ impl Log for Logger {
             Level::Error | Level::Fatal => console::error_1,
             Level::Warn => console::warn_1,
             Level::Info => console::info_1,
-            Level::Debug => console::debug_1,
-            Level::Trace => console::trace_1,
+            Level::Debug => console::log_1,
+            Level::Trace => console::debug_1,
         };
 
         let service_log = service::from_record(record);
