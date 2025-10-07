@@ -63,6 +63,8 @@ impl Log for Logger {
     fn flush(&self) {}
 }
 
+/// Initializes the WASM environment with this logger and provided filter. Logger can only be
+/// initialized once; else, an error is returned.
 pub fn try_init(filter: Filter) -> Result<(), SetLoggerError> {
     let max_level = filter.max_level();
     witchcraft_log::set_boxed_logger(Box::new(Logger { filter }))?;
@@ -71,6 +73,8 @@ pub fn try_init(filter: Filter) -> Result<(), SetLoggerError> {
     Ok(())
 }
 
+/// Initializes the WASM environment with this logger and a global maximum log level. Logger can
+/// only be initialized once; else, an error is returned.
 pub fn try_init_with_level(level: LevelFilter) -> Result<(), SetLoggerError> {
     let filter = Filter::builder().level(level).build();
     try_init(filter)
