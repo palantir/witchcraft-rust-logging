@@ -129,10 +129,11 @@ impl Snapshot for exponential_decay_histogram::Snapshot<Option<Arc<dyn Exemplar>
         self.stddev()
     }
 
-    fn exemplars<'a>(
-        &'a self,
-    ) -> Box<dyn Iterator<Item = (i64, Option<&'a Arc<dyn Exemplar>>)> + 'a> {
-        Box::new(self.exemplars().map(|(v, e)| (v, e.as_ref())))
+    fn exemplars<'a>(&'a self) -> Box<dyn Iterator<Item = (i64, &'a Arc<dyn Exemplar>)> + 'a> {
+        Box::new(
+            self.exemplars()
+                .filter_map(|(v, e)| e.as_ref().map(|e| (v, e))),
+        )
     }
 }
 

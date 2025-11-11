@@ -53,10 +53,7 @@ pub trait Snapshot: 'static + Sync + Send {
     /// Returns an iterator over the values in the snapshot with associated exemplars.
     ///
     /// The default implementation returns an empty iterator.
-    #[allow(clippy::type_complexity)]
-    fn exemplars<'a>(
-        &'a self,
-    ) -> Box<dyn Iterator<Item = (i64, Option<&'a Arc<dyn Exemplar>>)> + 'a> {
+    fn exemplars<'a>(&'a self) -> Box<dyn Iterator<Item = (i64, &'a Arc<dyn Exemplar>)> + 'a> {
         Box::new(iter::empty())
     }
 }
