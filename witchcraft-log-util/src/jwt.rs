@@ -18,6 +18,7 @@ use conjure_object::Uuid;
 use serde::de::{Error, Unexpected, Visitor};
 use serde::{Deserialize, Deserializer};
 use std::fmt;
+use std::str::FromStr;
 
 /// Represents the parsed form of a JWT but does not verify the token signature.
 ///
@@ -37,6 +38,10 @@ pub struct UnverifiedJwt {
     jti: Option<Uuid>,
     #[serde(default, deserialize_with = "de_opt_uuid")]
     org: Option<Uuid>,
+    #[serde(default)]
+    svc: Option<String>,
+    #[serde(default)]
+    exp: Option<u32>,
 }
 
 impl UnverifiedJwt {
@@ -63,19 +68,51 @@ impl UnverifiedJwt {
         self.org
     }
 
+    /// Returns the unverified first-party service name, i.e. the "svc" claim, of the JWT
+    /// or absent if the JWT does not contain the "svc" claim.
+    pub fn unverified_service(&self) -> &Option<String> {
+        &self.svc
+    }
+
+    /// Returns the unverified expiration time, i.e. the "exp" claim, of the JWT
+    /// or absent if the JWT does not contain the "exp" claim.
+    pub fn unverified_expiration_time(&self) -> Option<u32> {
+        self.exp
+    }
+
     /// Attempts to create an [`UnverifiedJwt`] from a provided bearer token.
     pub fn parse(s: &str) -> Option<Self> {
-        let mut it = s.split('.').skip(1);
-        let payload = it.next()?;
-        if it.count() != 1 {
-            return None;
-        }
-
-        let payload = URL_SAFE_NO_PAD.decode(payload).ok()?;
-
-        serde_json::from_slice(&payload).ok()
+        Self::from_str(s).ok()
     }
 }
+
+impl FromStr for UnverifiedJwt {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut it = s.split('.').skip(1);
+        let payload = it.next().ok_or(ParseError)?;
+        if it.count() != 1 {
+            return Err(ParseError);
+        }
+
+        let payload = URL_SAFE_NO_PAD.decode(payload).map_err(|_| ParseError)?;
+
+        serde_json::from_slice(&payload).map_err(|_| ParseError)
+    }
+}
+
+/// Error type generated if JWT parsing fails.
+#[derive(Debug)]
+pub struct ParseError;
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.write_str("invalid jwt")
+    }
+}
+
+impl std::error::Error for ParseError {}
 
 // To save space, we serialize UUIDs as base64 bytes rather than the normal hex format.
 fn de_uuid<'de, D>(deserializer: D) -> Result<Uuid, D::Error>
@@ -147,22 +184,25 @@ where
 #[cfg(test)]
 mod test {
     use crate::jwt::UnverifiedJwt;
+    use std::str::FromStr;
 
     #[test]
-    fn parse() {
+    fn parse_all_claims() {
         let token = "header.\
             eyJzdWIiOiJ3NVAyV1FNQlEwNnB5WEl3U2xCLy9BPT0iLCJzaWQiOiJQOFpqMUQ1SVRlMjZUdGVLK1l1RFl3PT0\
             iLCJqdGkiOiJwRm0wb1ZDSlQrQ0dWZFhmMmJLMy9RPT0iLCJvcmciOiJGQlMycTgvbFQvMnNBRktxZ09pUW13PT\
-            0iLCJleHAiOiAxNTc3ODY1NjAwfQ\
+            0iLCJzdmMiOiJzZXJ2aWNlIiwiZXhwIjoxNTc3ODY1NjAwfQ\
             .signature";
 
-        let parsed = UnverifiedJwt::parse(token).unwrap();
+        let parsed = UnverifiedJwt::from_str(token).unwrap();
 
         let expected = UnverifiedJwt {
             sub: "c393f659-0301-434e-a9c9-72304a507ffc".parse().unwrap(),
             sid: Some("3fc663d4-3e48-4ded-ba4e-d78af98b8363".parse().unwrap()),
             jti: Some("a459b4a1-5089-4fe0-8655-d5dfd9b2b7fd".parse().unwrap()),
             org: Some("1414b6ab-cfe5-4ffd-ac00-52aa80e8909b".parse().unwrap()),
+            svc: Some("service".to_string()),
+            exp: Some(1577865600),
         };
 
         assert_eq!(expected, parsed);
