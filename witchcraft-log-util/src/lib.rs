@@ -15,5 +15,6 @@
 #![warn(missing_docs)]
 
 pub mod filter;
+pub mod jwt;
 pub mod mdc;
 pub mod service;
