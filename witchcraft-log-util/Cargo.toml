@@ -7,8 +7,11 @@ description = "Utilities for Witchcraft logger implementations"
 repository = "https://github.com/palantir/witchcraft-rust-logging"
 
 [dependencies]
+base64 = "0.23"
 conjure-error = "5.0.0"
 conjure-object = "5.0.0"
 sequence_trie = "0.3.6"
+serde = "1"
+serde_json = "1"
 witchcraft-log = { version = "5.0.0", path = "../witchcraft-log" }
 witchcraft-logging-api = { version = "2.0.0", path = "../witchcraft-logging-api" }
