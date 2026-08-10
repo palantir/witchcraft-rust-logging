@@ -1,4 +1,4 @@
-// Copyright 2025 Palantir Technologies, Inc.
+// Copyright 2026 Palantir Technologies, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -62,9 +62,7 @@ impl UnverifiedJwt {
     pub fn unverified_organization_id(&self) -> Option<Uuid> {
         self.org
     }
-}
 
-impl UnverifiedJwt {
     /// Attempts to create an [`UnverifiedJwt`] from a provided bearer token.
     pub fn parse(s: &str) -> Option<Self> {
         let mut it = s.split('.').skip(1);
