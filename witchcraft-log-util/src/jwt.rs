@@ -101,13 +101,13 @@ impl FromStr for UnverifiedJwt {
 #[derive(Debug)]
 pub struct ParseError;
 
-impl fmt::Display for UnverifiedJwt {
+impl fmt::Display for ParseError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         fmt.write_str("invalid jwt")
     }
 }
 
-impl std::error::Error for UnverifiedJwt {}
+impl std::error::Error for ParseError {}
 
 // To save space, we serialize UUIDs as base64 bytes rather than the normal hex format.
 fn de_uuid<'de, D>(deserializer: D) -> Result<Uuid, D::Error>
