@@ -79,6 +79,11 @@ impl UnverifiedJwt {
     pub fn unverified_expiration_time(&self) -> Option<u32> {
         self.exp
     }
+
+    /// Attempts to create an [`UnverifiedJwt`] from a provided bearer token.
+    pub fn parse(s: &str) -> Option<Self> {
+        Self::from_str(s).ok()
+    }
 }
 
 impl FromStr for UnverifiedJwt {
