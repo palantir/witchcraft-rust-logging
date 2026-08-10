@@ -86,7 +86,7 @@ impl FromStr for UnverifiedJwt {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut it = s.split('.').skip(1);
-        let payload = it.next().ok_or_else(|| ParseError)?;
+        let payload = it.next().ok_or(ParseError)?;
         if it.count() != 1 {
             return Err(ParseError);
         }
