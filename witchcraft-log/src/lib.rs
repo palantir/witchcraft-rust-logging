@@ -30,9 +30,6 @@
 //! Parameters can be arbitrary `serde`-serializable values. Note, however, that loggers may commonly serialize
 //! parameters to JSON, so values that cannot be serialized into JSON are not recommended.
 //!
-//! Enable the `log-safety` Cargo feature to require every value passed in a `safe` parameter or to
-//! [`mdc::insert_safe`] to implement [`log_safety::LogSafe`]. Conjure types marked safe implement this trait.
-//!
 //! All dynamic information in the log record should be represented via parameters. In fact, Witchcraft-log requires the
 //! log message to be a static string - no interpolation of any kind can be performed. This means that the message
 //! itself can always be considered safe.
@@ -40,7 +37,7 @@
 //! ## Examples
 //!
 //! ```
-//! # let (user_id, memory_overhead) = ("", conjure_object::Uuid::nil());
+//! # let (user_id, memory_overhead) = ("", "");
 //! // with the standard log crate
 //! log::info!("ran a request for {} using {} bytes of memory", user_id, memory_overhead);
 //!
@@ -56,8 +53,8 @@
 //! ## Examples
 //!
 //! ```
-//! # fn shave_a_yak(_: conjure_object::Uuid) -> Result<(), conjure_error::Error> { Ok(()) }
-//! # let my_yak = conjure_object::Uuid::nil();
+//! # fn shave_a_yak(_: ()) -> Result<(), conjure_error::Error> { Ok(()) }
+//! # let my_yak = ();
 //! if let Err(e) = shave_a_yak(my_yak) {
 //!     witchcraft_log::warn!("error shaving a yak", safe: { yak: my_yak }, error: e);
 //! }
@@ -73,6 +70,19 @@ pub use crate::level::*;
 pub use crate::logger::*;
 pub use crate::record::*;
 pub use conjure_object::log_safety;
+
+/// Compile-fail checks for the optional log-safety enforcement.
+///
+/// ```compile_fail
+/// witchcraft_log::info!("message", safe: { value: "not marked safe" });
+/// ```
+///
+/// ```compile_fail
+/// witchcraft_log::mdc::insert_safe("value", "not marked safe");
+/// ```
+#[cfg(feature = "log-safety")]
+#[doc(hidden)]
+pub struct LogSafetyCompileFailTests;
 
 pub mod bridge;
 mod level;
