@@ -14,7 +14,6 @@
 use crate::bridge::{self, BridgedLogger};
 use crate::{Level, LevelFilter, Log, Metadata, Record};
 use conjure_error::Error;
-use conjure_object::log_safety::AssertLogSafe;
 use serde_value::Value;
 use std::cell::RefCell;
 
@@ -98,18 +97,15 @@ fn minimal() {
 fn params() {
     init();
 
-    warn!("message", safe: { safe_param: AssertLogSafe("foobar") });
+    warn!("message", safe: { safe_param: "foobar" });
     warn!("message", unsafe: { unsafe_param: 15 });
-    warn!("message", safe: { safe_param: AssertLogSafe("foobar") }, unsafe: { unsafe_param: 15 });
+    warn!("message", safe: { safe_param: "foobar" }, unsafe: { unsafe_param: 15 });
     let records = get_records();
     assert_eq!(records.len(), 3);
 
     assert_eq!(
         records[0].safe_params,
-        &[(
-            "safe_param",
-            Value::Newtype(Box::new(Value::String("foobar".to_string())))
-        )],
+        &[("safe_param", Value::String("foobar".to_string()))],
     );
     assert_eq!(records[0].unsafe_params, &[]);
 
@@ -121,10 +117,7 @@ fn params() {
 
     assert_eq!(
         records[2].safe_params,
-        &[(
-            "safe_param",
-            Value::Newtype(Box::new(Value::String("foobar".to_string())))
-        )],
+        &[("safe_param", Value::String("foobar".to_string()))],
     );
     assert_eq!(
         records[2].unsafe_params,
