@@ -22,8 +22,8 @@
 //! # Example
 //!
 //! ```
+//! use conjure_object::Uuid;
 //! use witchcraft_log::{debug, error, info, Level};
-//! use witchcraft_log::log_safety::AssertLogSafe;
 //!
 //! witchcraft_env_logger::init();
 //!
@@ -31,8 +31,8 @@
 //! error!("this is printed by default");
 //!
 //! if witchcraft_log::enabled!(Level::Info) {
-//!     let x = 3 * 4; // expensive computation
-//!     info!("figured out the answer", safe: { answer: AssertLogSafe(x) });
+//!     let request_id = Uuid::nil(); // expensive computation
+//!     info!("figured out the request ID", safe: { request_id: request_id });
 //! }
 //! ```
 //!
@@ -44,7 +44,7 @@
 //! ```not_rust
 //! $ RUST_LOG=info ./main
 //! {"type":"service.1","level":"ERROR","time":"2025-05-26T16:46:31.043928664Z","origin":"main","thread":"main","message":"this is printed by default","safe":true,"params":{"file":"witchcraft-env-logger/examples/main.rs","line":7}}
-//! {"type":"service.1","level":"INFO","time":"2025-05-26T16:46:31.043976765Z","origin":"main","thread":"main","message":"figured out the answer","safe":true,"params":{"answer":12,"file":"witchcraft-env-logger/examples/main.rs","line":11}}
+//! {"type":"service.1","level":"INFO","time":"2025-05-26T16:46:31.043976765Z","origin":"main","thread":"main","message":"figured out the request ID","safe":true,"params":{"request_id":"00000000-0000-0000-0000-000000000000","file":"witchcraft-env-logger/examples/main.rs","line":12}}
 //! ```
 //!
 //! ```not_rust
