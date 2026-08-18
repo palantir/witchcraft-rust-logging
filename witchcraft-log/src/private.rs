@@ -15,18 +15,9 @@ use crate::{Level, Metadata, Record};
 use conjure_error::Error;
 use erased_serde::Serialize;
 
-#[cfg(not(test))]
 pub fn safe_param<T>(value: &T) -> &dyn Serialize
 where
     T: Serialize + conjure_object::log_safety::MaybeLogSafe,
-{
-    value
-}
-
-#[cfg(test)]
-pub fn safe_param<T>(value: &T) -> &dyn Serialize
-where
-    T: Serialize,
 {
     value
 }

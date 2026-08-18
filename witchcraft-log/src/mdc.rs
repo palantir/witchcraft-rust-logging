@@ -37,19 +37,9 @@ thread_local! {
 /// # Panics
 ///
 /// Panics if the value cannot be serialized into an [`Any`].
-#[cfg(not(test))]
 pub fn insert_safe<T>(key: &'static str, value: T) -> Option<Any>
 where
     T: Serialize + conjure_object::log_safety::MaybeLogSafe,
-{
-    MDC.with(|v| v.borrow_mut().safe_mut().insert(key, value))
-}
-
-#[cfg(test)]
-#[allow(missing_docs)]
-pub fn insert_safe<T>(key: &'static str, value: T) -> Option<Any>
-where
-    T: Serialize,
 {
     MDC.with(|v| v.borrow_mut().safe_mut().insert(key, value))
 }
@@ -338,7 +328,7 @@ impl Drop for ScopeWith<'_> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "log-safety")))]
 mod test {
     use conjure_object::Any;
 

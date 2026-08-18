@@ -84,5 +84,5 @@ pub mod mdc;
 pub mod private;
 mod record;
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "log-safety")))]
 mod test;
