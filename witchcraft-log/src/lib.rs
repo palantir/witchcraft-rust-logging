@@ -30,6 +30,10 @@
 //! Parameters can be arbitrary `serde`-serializable values. Note, however, that loggers may commonly serialize
 //! parameters to JSON, so values that cannot be serialized into JSON are not recommended.
 //!
+//! Enable the `log-safety` Cargo feature to require every value passed in a `safe` parameter or to
+//! [`mdc::insert_safe`] to implement [`log_safety::LogSafe`]. Conjure types marked safe implement this trait. Values
+//! known to be safe for other reasons can be explicitly wrapped in [`log_safety::AssertLogSafe`].
+//!
 //! All dynamic information in the log record should be represented via parameters. In fact, Witchcraft-log requires the
 //! log message to be a static string - no interpolation of any kind can be performed. This means that the message
 //! itself can always be considered safe.
@@ -37,12 +41,13 @@
 //! ## Examples
 //!
 //! ```
+//! # use witchcraft_log::log_safety::AssertLogSafe;
 //! # let (user_id, memory_overhead) = ("", "");
 //! // with the standard log crate
 //! log::info!("ran a request for {} using {} bytes of memory", user_id, memory_overhead);
 //!
 //! // with the witchcraft-log crate
-//! witchcraft_log::info!("ran a request", safe: { memory: memory_overhead }, unsafe: { user: user_id });
+//! witchcraft_log::info!("ran a request", safe: { memory: AssertLogSafe(memory_overhead) }, unsafe: { user: user_id });
 //! ```
 //!
 //! # Errors
@@ -53,10 +58,11 @@
 //! ## Examples
 //!
 //! ```
+//! # use witchcraft_log::log_safety::AssertLogSafe;
 //! # fn shave_a_yak(_: ()) -> Result<(), conjure_error::Error> { Ok(()) }
 //! # let my_yak = ();
 //! if let Err(e) = shave_a_yak(my_yak) {
-//!     witchcraft_log::warn!("error shaving a yak", safe: { yak: my_yak }, error: e);
+//!     witchcraft_log::warn!("error shaving a yak", safe: { yak: AssertLogSafe(my_yak) }, error: e);
 //! }
 //! ```
 //!
@@ -69,6 +75,7 @@
 pub use crate::level::*;
 pub use crate::logger::*;
 pub use crate::record::*;
+pub use conjure_object::log_safety;
 
 pub mod bridge;
 mod level;

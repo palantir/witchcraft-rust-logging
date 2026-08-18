@@ -23,6 +23,7 @@
 //!
 //! ```
 //! use witchcraft_log::{debug, error, info, Level};
+//! use witchcraft_log::log_safety::AssertLogSafe;
 //!
 //! witchcraft_env_logger::init();
 //!
@@ -31,7 +32,7 @@
 //!
 //! if witchcraft_log::enabled!(Level::Info) {
 //!     let x = 3 * 4; // expensive computation
-//!     info!("figured out the answer", safe: { answer: x });
+//!     info!("figured out the answer", safe: { answer: AssertLogSafe(x) });
 //! }
 //! ```
 //!

@@ -13,7 +13,15 @@
 // limitations under the License.
 use crate::{Level, Metadata, Record};
 use conjure_error::Error;
+use conjure_object::log_safety::MaybeLogSafe;
 use erased_serde::Serialize;
+
+pub fn safe_param<T>(value: &T) -> &dyn Serialize
+where
+    T: Serialize + MaybeLogSafe,
+{
+    value
+}
 
 pub fn log(
     level: Level,

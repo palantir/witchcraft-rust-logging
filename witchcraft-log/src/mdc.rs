@@ -15,6 +15,7 @@
 //!
 //! An MDC is a thread local map containing extra parameters. Witchcraft logging implementations should include the
 //! contents of the MDC in service logs.
+use conjure_object::log_safety::MaybeLogSafe;
 use conjure_object::Any;
 use pin_project::{pin_project, pinned_drop};
 use serde::Serialize;
@@ -39,7 +40,7 @@ thread_local! {
 /// Panics if the value cannot be serialized into an [`Any`].
 pub fn insert_safe<T>(key: &'static str, value: T) -> Option<Any>
 where
-    T: Serialize,
+    T: Serialize + MaybeLogSafe,
 {
     MDC.with(|v| v.borrow_mut().safe_mut().insert(key, value))
 }
@@ -330,6 +331,7 @@ impl Drop for ScopeWith<'_> {
 
 #[cfg(test)]
 mod test {
+    use conjure_object::log_safety::AssertLogSafe;
     use conjure_object::Any;
 
     use crate::mdc;
@@ -338,9 +340,9 @@ mod test {
     fn scope() {
         mdc::clear();
 
-        mdc::insert_safe("foo", "bar");
+        mdc::insert_safe("foo", AssertLogSafe("bar"));
         let guard = mdc::scope();
-        mdc::insert_safe("foo", "baz");
+        mdc::insert_safe("foo", AssertLogSafe("baz"));
         assert_eq!(
             mdc::snapshot().safe().get("foo").unwrap(),
             &Any::new("baz").unwrap(),
@@ -357,9 +359,9 @@ mod test {
     fn bind() {
         mdc::clear();
 
-        mdc::insert_safe("foo", "bar");
+        mdc::insert_safe("foo", AssertLogSafe("bar"));
         futures_executor::block_on(mdc::bind(async {
-            mdc::insert_safe("foo", "baz");
+            mdc::insert_safe("foo", AssertLogSafe("baz"));
             assert_eq!(
                 mdc::snapshot().safe().get("foo").unwrap(),
                 &Any::new("baz").unwrap(),

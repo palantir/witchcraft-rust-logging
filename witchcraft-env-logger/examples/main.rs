@@ -1,3 +1,4 @@
+use witchcraft_log::log_safety::AssertLogSafe;
 use witchcraft_log::{Level, debug, error, info};
 
 fn main() {
@@ -8,6 +9,6 @@ fn main() {
 
     if witchcraft_log::enabled!(Level::Info) {
         let x = 3 * 4; // expensive computation
-        info!("figured out the answer", safe: { answer: x });
+        info!("figured out the answer", safe: { answer: AssertLogSafe(x) });
     }
 }
