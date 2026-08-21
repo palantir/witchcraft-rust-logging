@@ -95,7 +95,16 @@ pub fn from_record(record: &Record<'_>) -> ServiceLogV1 {
 
         let mut stacktrace = String::new();
         for trace in error.backtraces() {
-            writeln!(stacktrace, "{trace:?}").unwrap();
+            // Render each backtrace twice and merge per frame:
+            //   * plain `{:?}`  -> PrintFmt::Short -> `<idx>: <name>` (no address)
+            //   * alt   `{:#?}` -> PrintFmt::Full  -> `<idx>: 0x<ip> - <name>` (+ `at file:line`)
+            // For frames the in-process symbolizer *can* name, keep the concise short line. For
+            // frames it cannot (a stripped library resolves to `<unknown>`), keep the full,
+            // address-bearing line so the frame can still be reconstructed offline via
+            // `ip - baseAddress` against a build-id-matched debug companion. This keeps named
+            // frames readable while preserving addresses only where there's nothing else to go on.
+            writeln!(stacktrace, "{}", merge_backtrace(&format!("{trace:?}"), &format!("{trace:#?}")))
+                .unwrap();
         }
         message = message.stacktrace(stacktrace);
 
@@ -125,4 +134,70 @@ pub fn from_record(record: &Record<'_>) -> ServiceLogV1 {
     }
 
     message.build()
+}
+
+/// Merge the Short (`{:?}`) and Full (`{:#?}`) renderings of one backtrace, preferring the concise
+/// short line for every frame the in-process symbolizer could name and falling back to the full,
+/// address-bearing line only where the short line is `<unknown>`.
+///
+/// Both renderings list the same frames in the same order. Short is one line per frame
+/// (`  <idx>: <name>`); Full is a header line per frame (`  <idx>:  0x<ip> - <name>`) optionally
+/// followed by `at <file>:<line>` continuation lines. We walk the Full rendering frame by frame:
+/// for a named frame we emit the Short line (dropping the address and any continuation lines), for
+/// an unnamed frame we emit the Full block verbatim so its IP survives for offline reconstruction.
+fn merge_backtrace(short: &str, full: &str) -> String {
+    let short_lines: std::collections::HashMap<usize, &str> = short
+        .lines()
+        .filter_map(|line| Some((frame_index(line)?, line)))
+        .collect();
+
+    let mut out = String::new();
+    let mut keep_continuations = true;
+    for line in full.lines() {
+        match frame_index(line) {
+            Some(idx) => {
+                let short_line = short_lines.get(&idx).copied();
+                if short_line.is_some_and(|l| !frame_is_unknown(l)) {
+                    // Named frame: concise short line, no address, drop its continuations.
+                    out.push_str(short_line.unwrap());
+                    out.push('\n');
+                    keep_continuations = false;
+                } else {
+                    // Unnamed (or unmatched) frame: keep the full address-bearing block.
+                    out.push_str(line);
+                    out.push('\n');
+                    keep_continuations = true;
+                }
+            }
+            // Continuation (`at file:line`) / blank line: keep only under a full-form frame.
+            None if keep_continuations => {
+                out.push_str(line);
+                out.push('\n');
+            }
+            None => {}
+        }
+    }
+    // Drop the trailing newline; the caller re-adds one via writeln!.
+    if out.ends_with('\n') {
+        out.pop();
+    }
+    out
+}
+
+/// The frame index of a backtrace line like `  12: ...`, or `None` for continuation/blank lines.
+/// An `at /path/file.rs:585` continuation splits into a non-numeric left side and is rejected.
+fn frame_index(line: &str) -> Option<usize> {
+    let (num, rest) = line.trim_start().split_once(':')?;
+    if rest.is_empty() || rest.starts_with(' ') {
+        num.parse().ok()
+    } else {
+        None
+    }
+}
+
+/// Whether a backtrace line names its frame `<unknown>` (e.g. the short form `  12: <unknown>`).
+fn frame_is_unknown(line: &str) -> bool {
+    line.trim_start()
+        .split_once(':')
+        .is_some_and(|(_, name)| name.trim() == "<unknown>")
 }
