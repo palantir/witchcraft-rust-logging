@@ -18,3 +18,4 @@ pub mod filter;
 pub mod jwt;
 pub mod mdc;
 pub mod service;
+pub mod trace;

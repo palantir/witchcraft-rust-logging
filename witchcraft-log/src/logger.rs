@@ -104,3 +104,61 @@ pub fn set_max_level(level: LevelFilter) {
 pub fn max_level() -> LevelFilter {
     unsafe { mem::transmute(MAX_LOG_LEVEL_FILTER.load(Ordering::Relaxed)) }
 }
+
+/// Process-wide facts describing the native module that produced a backtrace, used to reconstruct
+/// stripped in-process traces offline.
+///
+/// A logged `std::backtrace::Backtrace` (see the `error:` argument to the log macros) renders each
+/// frame as an absolute runtime instruction pointer. When the module is stripped those pointers no
+/// longer resolve to symbols in-process, and nothing normalizes them for a *logged* trace the way
+/// an OS tombstone would. Recovering symbols offline needs two facts the running process alone
+/// knows: the module's load base (to compute `file_va = ip - base_address`) and a key selecting the
+/// matching artifact (the crate `version`). A logging implementation that has captured these once at
+/// startup can install them here so the service-log renderer appends them next to each backtrace.
+///
+/// The load base is typically obtained from [`witchcraft-log-util`]'s `find_address_offset`; the
+/// caller constructs this struct with that base plus its own module name and version.
+#[derive(Debug, Clone)]
+pub struct TraceContext {
+    /// The module's name, supplied by the caller (e.g. the artifact name `"lohi-android"`).
+    pub module: String,
+    /// The module's mapped load base. Absolute frame IPs minus this yield file-relative addresses
+    /// (`file_va = ip - base_address`) for `addr2line`/`llvm-symbolizer`. `None` when it could not
+    /// be determined (e.g. an unsupported target).
+    pub base_address: Option<usize>,
+    /// A version string identifying the artifact to resolve against (e.g. the consumer crate's
+    /// `CARGO_PKG_VERSION`).
+    pub version: String,
+}
+
+static TRACE_CONTEXT: OnceLock<TraceContext> = OnceLock::new();
+
+/// Installs the global [`TraceContext`].
+///
+/// Like the logger, the trace context can only be set once; further calls return an error. It is
+/// intended to be called once at startup by the logging implementation, alongside `set_boxed_logger`.
+pub fn set_trace_context(context: TraceContext) -> Result<(), SetTraceContextError> {
+    let mut context = Some(context);
+    TRACE_CONTEXT.get_or_init(|| context.take().unwrap());
+    match context {
+        Some(_) => Err(SetTraceContextError(())),
+        None => Ok(()),
+    }
+}
+
+/// Returns the installed [`TraceContext`], or `None` if one has not been set.
+pub fn trace_context() -> Option<&'static TraceContext> {
+    TRACE_CONTEXT.get()
+}
+
+/// An error trying to set the trace context when one is already installed.
+#[derive(Debug)]
+pub struct SetTraceContextError(());
+
+impl fmt::Display for SetTraceContextError {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.write_str("a trace context is already installed")
+    }
+}
+
+impl Error for SetTraceContextError {}
