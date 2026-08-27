@@ -94,6 +94,7 @@ mod test {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn downcast() {
         let gauge: Arc<dyn Gauge> = Arc::new(TestGauge { value: 42 });
 
