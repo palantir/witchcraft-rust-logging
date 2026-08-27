@@ -9,7 +9,7 @@ repository = "https://github.com/palantir/witchcraft-rust-logging"
 categories = ["development-tools::profiling"]
 
 [features]
-js = ["dep:getrandom", "getrandom/wasm_js", "exponential-decay-histogram/js"]
+js = ["dep:getrandom", "getrandom/wasm_js", "exponential-decay-histogram/js", "dep:web-time"]
 
 [dependencies]
 exponential-decay-histogram = "0.1.16"
@@ -19,7 +19,7 @@ serde = "1.0"
 serde-value = "0.7"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-web-time = "1.1.0"
+web-time = {version = "1.1.0", optional = true }
 getrandom = { version = "0.4", optional = true }
 
 [dev-dependencies]
