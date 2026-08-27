@@ -125,6 +125,7 @@ mod test {
     use crate::MetricId;
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn basic() {
         let id = MetricId::new("foo.bar")
             .with_tag("a", "b")

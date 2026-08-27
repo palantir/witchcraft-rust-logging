@@ -11,9 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use crate::instant::Instant;
 use crate::{Clock, ExponentiallyDecayingReservoir, Meter, Reservoir, Snapshot};
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 /// A metric tracking the duration and rate of events.
 ///
@@ -127,10 +128,10 @@ impl Drop for Time<'_> {
 #[cfg(test)]
 mod test {
     use crate::Timer;
-    use std::thread;
     use std::time::Duration;
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     #[allow(clippy::float_cmp)]
     fn basic() {
         let timer = Timer::default();
@@ -148,12 +149,26 @@ mod test {
         assert_eq!(timer.snapshot().value(0.8), 5.)
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     #[test]
     fn time() {
         let timer = Timer::default();
 
         let guard = timer.time();
-        thread::sleep(Duration::from_millis(10));
+        std::thread::sleep(Duration::from_millis(10));
+        drop(guard);
+
+        assert_eq!(timer.count(), 1);
+        assert!(timer.snapshot().max() >= 10_000_000);
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    async fn time() {
+        let timer = Timer::default();
+
+        let guard = timer.time();
+        futures_timer::Delay::new(Duration::from_millis(10)).await;
         drop(guard);
 
         assert_eq!(timer.count(), 1);

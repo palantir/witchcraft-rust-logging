@@ -13,14 +13,22 @@
 // limitations under the License.
 use once_cell::sync::Lazy;
 use std::sync::Arc;
-use std::time::Instant;
+
+/// Instant that works on native and wasm archs.
+pub mod instant {
+    #[cfg(not(all(target_arch = "wasm32", feature = "js")))]
+    pub use std::time::Instant;
+
+    #[cfg(all(target_arch = "wasm32", feature = "js"))]
+    pub use web_time::Instant;
+}
 
 pub(crate) static SYSTEM_CLOCK: Lazy<Arc<SystemClock>> = Lazy::new(|| Arc::new(SystemClock));
 
 /// A source of monotonic time.
 pub trait Clock: 'static + Sync + Send {
     /// Returns the current time.
-    fn now(&self) -> Instant;
+    fn now(&self) -> instant::Instant;
 }
 
 /// A `Clock` implementation which uses the system clock.
@@ -28,14 +36,15 @@ pub struct SystemClock;
 
 impl Clock for SystemClock {
     #[inline]
-    fn now(&self) -> Instant {
-        Instant::now()
+    fn now(&self) -> instant::Instant {
+        instant::Instant::now()
     }
 }
 
 #[cfg(test)]
 pub(crate) mod test {
     use super::*;
+    use crate::instant::Instant;
     use parking_lot::Mutex;
     use std::time::Duration;
 

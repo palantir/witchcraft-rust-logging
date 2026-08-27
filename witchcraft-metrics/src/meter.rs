@@ -11,12 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+use crate::instant::Instant;
 use crate::Clock;
 use parking_lot::Mutex;
 use std::convert::TryFrom;
 use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
 use std::sync::Arc;
-use std::time::Instant;
 
 const INTERVAL_SECS: u64 = 5;
 const SECONDS_PER_MINUTE: f64 = 60.;
@@ -204,6 +204,7 @@ mod test {
     use std::time::Duration;
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     #[allow(clippy::float_cmp)]
     fn starts_out_with_no_rates_or_count() {
         let clock = Arc::new(TestClock::new());
@@ -217,6 +218,7 @@ mod test {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn marks_events_and_updates_rate_and_count() {
         let clock = Arc::new(TestClock::new());
         let meter = Meter::new_with(clock.clone());
