@@ -22,12 +22,14 @@ version: 2
 jobs:
   build:
     docker:
-      - image: rust:1.89.0
+      - image: cimg/rust:1.97.1-node
     environment:
       RUSTFLAGS: -D warnings
     steps:
       - checkout
       - run: rustup component add rustfmt clippy
+      - run: rustup target add wasm32-unknown-unknown
+      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - *RESTORE_REGISTRY
       - run: cargo generate-lockfile
       - *SAVE_REGISTRY
@@ -35,7 +37,9 @@ jobs:
       - *RESTORE_DEPS
       - run: cargo fmt --all -- --check
       - run: cargo clippy --all --all-targets
+      - run: cargo clippy -p witchcraft-metrics --target wasm32-unknown-unknown --features js
       - run: cargo test --all
+      - run: cd witchcraft-metrics && wasm-pack test --node --features js
       - *SAVE_DEPS
   circle-all:
     docker:

@@ -114,6 +114,7 @@ mod test {
     use crate::{ExponentiallyDecayingReservoir, Reservoir};
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn exponential_basic() {
         let reservoir = ExponentiallyDecayingReservoir::new();
 
