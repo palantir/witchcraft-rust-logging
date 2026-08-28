@@ -15,3 +15,7 @@ serde = "1"
 serde_json = "1"
 witchcraft-log = { version = "5.0.0", path = "../witchcraft-log" }
 witchcraft-logging-api = { version = "2.0.0", path = "../witchcraft-logging-api" }
+
+# Used by `trace::find_address_offset` Gated off wasm, which findshlibs does not support
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+findshlibs = "0.10"

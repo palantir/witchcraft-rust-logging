@@ -104,3 +104,50 @@ pub fn set_max_level(level: LevelFilter) {
 pub fn max_level() -> LevelFilter {
     unsafe { mem::transmute(MAX_LOG_LEVEL_FILTER.load(Ordering::Relaxed)) }
 }
+
+/// Process-wide facts describing the native module that produced a backtrace, used to reconstruct
+/// stripped in-process traces offline.
+///
+/// The load base is typically obtained from [`witchcraft-log-util`]'s `find_address_offset`; the
+/// caller constructs this struct with that base plus its own module name and version.
+#[derive(Debug, Clone)]
+pub struct TraceContext {
+    /// The module's name, supplied by the caller (e.g. the artifact name `"lohi-android"`).
+    pub module: String,
+    /// The module's mapped load base. Absolute frame IPs minus this yield file-relative addresses
+    /// (`file_va = ip - base_address`) for `addr2line`/`llvm-symbolizer`. `None` when it could not
+    /// be determined/was not supplied.
+    pub base_address: Option<usize>,
+    /// A version string identifying the artifact to resolve against (e.g. the consumer crate's
+    /// `CARGO_PKG_VERSION`).
+    pub version: String,
+}
+
+static TRACE_CONTEXT: OnceLock<TraceContext> = OnceLock::new();
+
+/// Installs the global [`TraceContext`]. Callable once.
+pub fn set_trace_context(context: TraceContext) -> Result<(), SetTraceContextError> {
+    let mut context = Some(context);
+    TRACE_CONTEXT.get_or_init(|| context.take().unwrap());
+    match context {
+        Some(_) => Err(SetTraceContextError(())),
+        None => Ok(()),
+    }
+}
+
+/// Returns the installed [`TraceContext`], or `None` if one has not been set.
+pub fn trace_context() -> Option<&'static TraceContext> {
+    TRACE_CONTEXT.get()
+}
+
+/// An error trying to set the trace context when one is already installed.
+#[derive(Debug)]
+pub struct SetTraceContextError(());
+
+impl fmt::Display for SetTraceContextError {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt.write_str("a trace context is already installed")
+    }
+}
+
+impl Error for SetTraceContextError {}

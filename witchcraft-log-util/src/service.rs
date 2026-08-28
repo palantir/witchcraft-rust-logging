@@ -95,7 +95,18 @@ pub fn from_record(record: &Record<'_>) -> ServiceLogV1 {
 
         let mut stacktrace = String::new();
         for trace in error.backtraces() {
-            writeln!(stacktrace, "{trace:?}").unwrap();
+            // Render every frame in the full/alternate form (`0x<ip> - <name-or-unknown>` plus any
+            // `at file:line`). Frames in a stripped module resolve to `<unknown>` in-process but
+            // keep their absolute IP, so they can be reconstructed offline via `ip - baseAddress`.
+            writeln!(stacktrace, "{trace:#?}").unwrap();
+        }
+        // Append the installed trace context so a stripped trace is self-contained
+        if let Some(context) = witchcraft_log::trace_context() {
+            write!(stacktrace, "trace-context: module={}", context.module).unwrap();
+            if let Some(base) = context.base_address {
+                write!(stacktrace, " baseAddress=0x{base:x}").unwrap();
+            }
+            writeln!(stacktrace, " version={}", context.version).unwrap();
         }
         message = message.stacktrace(stacktrace);
 
