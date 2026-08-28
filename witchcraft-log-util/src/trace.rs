@@ -36,7 +36,7 @@ pub fn find_address_offset() -> Option<usize> {
     let marker = find_address_offset as *const () as usize;
     let mut found = None;
     TargetSharedLibrary::each(|shlib| {
-        let base = shlib.actual_load_addr().0 as usize;
+        let base = shlib.actual_load_addr().0;
         if marker < base || marker >= base + shlib.len() {
             return IterationControl::Continue;
         }
