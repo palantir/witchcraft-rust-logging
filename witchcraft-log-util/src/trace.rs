@@ -20,6 +20,8 @@
 //! (`file_va = ip - base_address`) and resolve against a matching artifact. This module finds that
 //! load base at runtime; the caller pairs it with a module name and version in a
 //! [`witchcraft_log::TraceContext`] and installs it via `witchcraft_log::set_trace_context`.
+//!
+//! Requires the `address-offset` feature, which pulls in `findshlibs`.
 
 /// Return the mapped load base of the native module this crate is linked into, or `None` if it
 /// cannot be determined.

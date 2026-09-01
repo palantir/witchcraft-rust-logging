@@ -6,6 +6,10 @@ license = "Apache-2.0"
 description = "Utilities for Witchcraft logger implementations"
 repository = "https://github.com/palantir/witchcraft-rust-logging"
 
+[features]
+# Enables the `trace` module, which looks up the load base of the enclosing native module.
+address-offset = ["dep:findshlibs"]
+
 [dependencies]
 base64 = "0.23"
 conjure-error = "5.0.0"
@@ -18,4 +22,4 @@ witchcraft-logging-api = { version = "2.0.0", path = "../witchcraft-logging-api"
 
 # Used by `trace::find_address_offset` Gated off wasm, which findshlibs does not support
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
-findshlibs = "0.10"
+findshlibs = { version = "0.10", optional = true }
