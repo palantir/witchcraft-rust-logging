@@ -97,14 +97,20 @@ pub fn from_record(record: &Record<'_>) -> ServiceLogV1 {
         for trace in error.backtraces() {
             // Render every frame in the full/alternate form (`0x<ip> - <name-or-unknown>` plus any
             // `at file:line`). Frames in a stripped module resolve to `<unknown>` in-process but
-            // keep their absolute IP, so they can be reconstructed offline via `ip - baseAddress`.
+            // keep their absolute IP, so they can be reconstructed offline via `ip - addressStart`.
             writeln!(stacktrace, "{trace:#?}").unwrap();
         }
-        // Append the installed trace context so a stripped trace is self-contained
-        if let Some(context) = witchcraft_log::trace_context() {
+        // Append the installed trace contexts so a stripped trace is self-contained.
+        for context in witchcraft_log::trace_contexts() {
             write!(stacktrace, "trace-context: module={}", context.module).unwrap();
-            if let Some(base) = context.base_address {
-                write!(stacktrace, " baseAddress=0x{base:x}").unwrap();
+            if let Some(start) = context.address_start {
+                write!(stacktrace, " addressStart=0x{start:x}").unwrap();
+            }
+            if let Some(len) = context.address_len {
+                write!(stacktrace, " addressLen=0x{len:x}").unwrap();
+            }
+            if let Some(build_id) = context.build_id {
+                write!(stacktrace, " buildId={build_id}").unwrap();
             }
             writeln!(stacktrace, " version={}", context.version).unwrap();
         }

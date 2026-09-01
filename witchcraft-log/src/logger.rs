@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 use crate::{LevelFilter, Metadata, Record};
+use std::collections::BTreeMap;
 use std::error::Error;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::OnceLock;
+use std::sync::{OnceLock, RwLock};
 use std::{fmt, mem};
 
 /// A trait encapsulating the operations required of a logger.
@@ -108,46 +109,87 @@ pub fn max_level() -> LevelFilter {
 /// Process-wide facts describing the native module that produced a backtrace, used to reconstruct
 /// stripped in-process traces offline.
 ///
-/// The load base is typically obtained from [`witchcraft-log-util`]'s `find_address_offset`; the
-/// caller constructs this struct with that base plus its own module name and version.
+/// The address range and build ID are typically obtained from [`witchcraft-log-util`]'s
+/// `find_module_trace_info`; the caller constructs this struct with that information plus its own
+/// module name and version.
 #[derive(Debug, Clone)]
 pub struct TraceContext {
     /// The module's name, supplied by the caller (e.g. the artifact name `"lohi-android"`).
     pub module: String,
-    /// The module's mapped load base. Absolute frame IPs minus this yield file-relative addresses
-    /// (`file_va = ip - base_address`) for `addr2line`/`llvm-symbolizer`. `None` when it could not
-    /// be determined/was not supplied.
-    pub base_address: Option<usize>,
+    /// The start of the module's mapped address range.
+    pub address_start: Option<usize>,
+    /// The length of the module's mapped address range.
+    pub address_len: Option<usize>,
+    /// The module's platform-specific build ID, in findshlibs' canonical string form.
+    pub build_id: Option<String>,
     /// A version string identifying the artifact to resolve against (e.g. the consumer crate's
     /// `CARGO_PKG_VERSION`).
     pub version: String,
 }
 
-static TRACE_CONTEXT: OnceLock<TraceContext> = OnceLock::new();
+type TraceContextKey = (Option<String>, String, String);
 
-/// Installs the global [`TraceContext`]. Callable once.
-pub fn set_trace_context(context: TraceContext) -> Result<(), SetTraceContextError> {
-    let mut context = Some(context);
-    TRACE_CONTEXT.get_or_init(|| context.take().unwrap());
-    match context {
-        Some(_) => Err(SetTraceContextError(())),
-        None => Ok(()),
+static TRACE_CONTEXTS: OnceLock<RwLock<BTreeMap<TraceContextKey, TraceContext>>> = OnceLock::new();
+
+fn trace_contexts_map() -> &'static RwLock<BTreeMap<TraceContextKey, TraceContext>> {
+    TRACE_CONTEXTS.get_or_init(Default::default)
+}
+
+/// Installs or updates a global [`TraceContext`].
+///
+/// Contexts are keyed by build ID and the caller-supplied module id. Installing another context
+/// with the same key replaces the previous value.
+pub fn set_trace_context(context: TraceContext) {
+    let key = (
+        context.build_id.clone(),
+        context.module.clone(),
+        context.version.clone(),
+    );
+    trace_contexts_map()
+        .write()
+        .unwrap_or_else(|e| e.into_inner())
+        .insert(key, context);
+}
+
+/// Returns a snapshot of all installed trace contexts in deterministic key order.
+pub fn trace_contexts() -> Vec<TraceContext> {
+    trace_contexts_map()
+        .read()
+        .unwrap_or_else(|e| e.into_inner())
+        .values()
+        .cloned()
+        .collect()
+}
+
+#[cfg(test)]
+mod trace_context_tests {
+    use super::*;
+
+    #[test]
+    fn stores_orders_and_replaces_trace_contexts() {
+        let context = |module: &str, build_id: &str, version: &str| TraceContext {
+            module: module.to_string(),
+            address_start: Some(0x1000),
+            address_len: Some(0x2000),
+            build_id: Some(build_id.to_string()),
+            version: version.to_string(),
+        };
+
+        set_trace_context(context("trace-context-test-b", "build-b", "1"));
+        set_trace_context(context("trace-context-test-a", "build-a", "1"));
+        set_trace_context(context("trace-context-test-a", "build-a", "2"));
+        let mut alt_context = context("trace-context-test-a", "build-a", "1");
+        alt_context.address_start = Some(0x3000);
+        set_trace_context(alt_context);
+
+        let contexts = trace_contexts()
+            .into_iter()
+            .filter(|context| context.module.starts_with("trace-context-test-"))
+            .collect::<Vec<_>>();
+        assert_eq!(contexts.len(), 3);
+        assert_eq!(contexts[0].module, "trace-context-test-a");
+        assert_eq!(contexts[0].version, "1");
+        assert_eq!(contexts[0].address_start, Some(0x3000));
+        assert_eq!(contexts[2].module, "trace-context-test-b");
     }
 }
-
-/// Returns the installed [`TraceContext`], or `None` if one has not been set.
-pub fn trace_context() -> Option<&'static TraceContext> {
-    TRACE_CONTEXT.get()
-}
-
-/// An error trying to set the trace context when one is already installed.
-#[derive(Debug)]
-pub struct SetTraceContextError(());
-
-impl fmt::Display for SetTraceContextError {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt.write_str("a trace context is already installed")
-    }
-}
-
-impl Error for SetTraceContextError {}
