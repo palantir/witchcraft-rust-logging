@@ -18,3 +18,5 @@ pub mod filter;
 pub mod jwt;
 pub mod mdc;
 pub mod service;
+#[cfg(feature = "address-offset")]
+pub mod trace;

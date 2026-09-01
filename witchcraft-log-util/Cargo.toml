@@ -6,6 +6,10 @@ license = "Apache-2.0"
 description = "Utilities for Witchcraft logger implementations"
 repository = "https://github.com/palantir/witchcraft-rust-logging"
 
+[features]
+# Enables the `trace` module, which looks up trace information for the enclosing native module.
+address-offset = ["dep:findshlibs"]
+
 [dependencies]
 base64 = "0.23"
 conjure-error = "5.0.0"
@@ -15,3 +19,7 @@ serde = "1"
 serde_json = "1"
 witchcraft-log = { version = "5.0.0", path = "../witchcraft-log" }
 witchcraft-logging-api = { version = "2.0.0", path = "../witchcraft-logging-api" }
+
+# Used by `trace::find_module_trace_info`. Gated off wasm, which findshlibs does not support.
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+findshlibs = { version = "0.10", optional = true }
