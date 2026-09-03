@@ -15,6 +15,7 @@
 //!
 //! An MDC is a thread local map containing extra parameters. Witchcraft logging implementations should include the
 //! contents of the MDC in service logs.
+use conjure_object::log_safety::MaybeLogSafe;
 use conjure_object::Any;
 use pin_project::{pin_project, pinned_drop};
 use serde::Serialize;
@@ -39,7 +40,7 @@ thread_local! {
 /// Panics if the value cannot be serialized into an [`Any`].
 pub fn insert_safe<T>(key: &'static str, value: T) -> Option<Any>
 where
-    T: Serialize,
+    T: Serialize + MaybeLogSafe,
 {
     MDC.with(|v| v.borrow_mut().safe_mut().insert(key, value))
 }
@@ -328,7 +329,7 @@ impl Drop for ScopeWith<'_> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "log-safety")))]
 mod test {
     use conjure_object::Any;
 
