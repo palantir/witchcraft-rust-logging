@@ -71,19 +71,6 @@ pub use crate::logger::*;
 pub use crate::record::*;
 pub use conjure_object::log_safety;
 
-/// Compile-fail checks for the optional log-safety enforcement.
-///
-/// ```compile_fail
-/// witchcraft_log::info!("message", safe: { value: "not marked safe" });
-/// ```
-///
-/// ```compile_fail
-/// witchcraft_log::mdc::insert_safe("value", "not marked safe");
-/// ```
-#[cfg(feature = "log-safety")]
-#[doc(hidden)]
-pub struct LogSafetyCompileFailTests;
-
 pub mod bridge;
 mod level;
 mod logger;
