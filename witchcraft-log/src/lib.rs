@@ -69,6 +69,7 @@
 pub use crate::level::*;
 pub use crate::logger::*;
 pub use crate::record::*;
+pub use conjure_object::log_safety;
 
 pub mod bridge;
 mod level;
@@ -80,5 +81,5 @@ pub mod mdc;
 pub mod private;
 mod record;
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "log-safety")))]
 mod test;

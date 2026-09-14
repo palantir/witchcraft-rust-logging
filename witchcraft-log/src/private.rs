@@ -13,7 +13,28 @@
 // limitations under the License.
 use crate::{Level, Metadata, Record};
 use conjure_error::Error;
+use conjure_object::log_safety::MaybeLogSafe;
 use erased_serde::Serialize;
+
+/// Compile-fail checks for the optional log-safety enforcement.
+///
+/// ```compile_fail
+/// witchcraft_log::info!("message", safe: { value: "not marked safe" });
+/// ```
+///
+/// ```compile_fail
+/// witchcraft_log::mdc::insert_safe("value", "not marked safe");
+/// ```
+#[cfg(feature = "log-safety")]
+#[doc(hidden)]
+pub struct LogSafetyCompileFailTests;
+
+pub fn safe_param<T>(value: &T) -> &dyn Serialize
+where
+    T: Serialize + MaybeLogSafe,
+{
+    value
+}
 
 pub fn log(
     level: Level,

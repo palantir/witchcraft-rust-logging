@@ -37,7 +37,7 @@ macro_rules! log {
             $crate::private::log(
                 level,
                 &(module_path!(), file!(), line!(), $msg),
-                &[$($((stringify!($safe_key), &$safe_value)),*)*],
+                &[$($((stringify!($safe_key), $crate::private::safe_param(&$safe_value))),*)*],
                 &[$($((stringify!($unsafe_key), &$unsafe_value)),*)*],
                 None $(.or(Some(&$error)))?,
             );
