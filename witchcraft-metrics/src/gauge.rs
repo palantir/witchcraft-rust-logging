@@ -13,26 +13,15 @@
 // limitations under the License.
 use serde::Serialize;
 use serde_value::Value;
-use std::any::TypeId;
+use std::any::Any;
 use std::sync::Arc;
-
-mod private {
-    pub struct PrivacyToken;
-}
 
 /// A generalized metric which computes an arbitrary value.
 ///
 /// It is implemented for all closures returning serializable types.
-pub trait Gauge: 'static + Sync + Send {
+pub trait Gauge: Any + Sync + Send {
     /// Returns the serialized value.
     fn value(&self) -> Value;
-
-    // PrivacyToken can't be named outside of this crate, so it prevents anyone from overriding this default
-    // implementation in another crate. That allows us to trust it to be correct in the downcast methods below.
-    #[doc(hidden)]
-    fn __private_api_type_id(&self, _: private::PrivacyToken) -> TypeId {
-        TypeId::of::<Self>()
-    }
 }
 
 impl dyn Gauge {
@@ -41,7 +30,7 @@ impl dyn Gauge {
     where
         T: Gauge,
     {
-        self.__private_api_type_id(private::PrivacyToken) == TypeId::of::<T>()
+        (self as &dyn Any).is::<T>()
     }
 
     /// Attempts to downcast the gauge's value to the type `T` if it has that type.
@@ -49,11 +38,7 @@ impl dyn Gauge {
     where
         T: Gauge,
     {
-        if self.is::<T>() {
-            unsafe { Some(&*(self as *const dyn Gauge as *const T)) }
-        } else {
-            None
-        }
+        (self as &dyn Any).downcast_ref()
     }
 
     /// Attempts to downcast the gauge's value to the type `T` if it has that type.
