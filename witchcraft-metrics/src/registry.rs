@@ -340,6 +340,7 @@ mod test {
     use std::time::Duration;
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn first_metric_wins() {
         let registry = MetricRegistry::new();
 
@@ -369,6 +370,7 @@ mod test {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn metrics_returns_snapshot() {
         let registry = MetricRegistry::new();
 
@@ -384,6 +386,7 @@ mod test {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn tagged_distinct_from_untagged() {
         let registry = MetricRegistry::new();
 

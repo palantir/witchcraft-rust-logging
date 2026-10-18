@@ -13,7 +13,12 @@
 // limitations under the License.
 use once_cell::sync::Lazy;
 use std::sync::Arc;
-use std::time::Instant;
+
+#[cfg(not(all(target_arch = "wasm32", feature = "js")))]
+pub use std::time::Instant;
+
+#[cfg(all(target_arch = "wasm32", feature = "js"))]
+pub use web_time::Instant;
 
 pub(crate) static SYSTEM_CLOCK: Lazy<Arc<SystemClock>> = Lazy::new(|| Arc::new(SystemClock));
 

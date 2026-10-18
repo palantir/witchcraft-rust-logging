@@ -67,6 +67,7 @@ mod test {
     use crate::Counter;
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn basic() {
         let counter = Counter::new();
         assert_eq!(counter.count(), 0);
