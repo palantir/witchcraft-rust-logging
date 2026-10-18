@@ -11,8 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-use crate::instant::Instant;
-use crate::Clock;
+use crate::{Clock, Instant};
 use parking_lot::Mutex;
 use std::convert::TryFrom;
 use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
