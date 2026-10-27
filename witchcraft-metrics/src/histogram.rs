@@ -104,6 +104,7 @@ mod test {
     }
 
     #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
     fn basic() {
         let histogram = Histogram::new(TestReservoir(AtomicI64::new(0)));
         assert_eq!(histogram.count(), 0);
