@@ -17,4 +17,5 @@
 pub mod filter;
 pub mod jwt;
 pub mod mdc;
+pub mod metrics;
 pub mod service;
