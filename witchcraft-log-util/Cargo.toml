@@ -6,6 +6,9 @@ license = "Apache-2.0"
 description = "Utilities for Witchcraft logger implementations"
 repository = "https://github.com/palantir/witchcraft-rust-logging"
 
+[features]
+js = ["dep:chrono", "conjure-object/js", "witchcraft-metrics/js"]
+
 [dependencies]
 base64 = "0.23"
 conjure-error = "5.18.0"
@@ -15,3 +18,10 @@ serde = "1"
 serde_json = "1"
 witchcraft-log = { version = "5.1.0", path = "../witchcraft-log" }
 witchcraft-logging-api = { version = "2.1.0", path = "../witchcraft-logging-api" }
+witchcraft-metrics = { version = "1.2.0", path = "../witchcraft-metrics" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+chrono = { version = "0.4", optional = true, default-features = false, features = ["wasmbind"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.80"
