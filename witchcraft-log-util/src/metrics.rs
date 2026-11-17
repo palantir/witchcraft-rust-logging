@@ -14,13 +14,22 @@
 
 //! Utilities for Witchcraft metric logs.
 
-use conjure_object::Utc;
 use conjure_object::log_safety::AssertLogSafe;
+use conjure_object::{DateTime, Utc};
+use std::sync::LazyLock;
 use witchcraft_logging_api::objects::{MetricLogV1, metric_log_v1};
 use witchcraft_metrics::{Counter, Gauge, Histogram, Meter, Metric, MetricId, Timer};
 
 const NANOS_PER_MICRO: i64 = 1_000;
 const NANOS_PER_MICRO_F64: f64 = NANOS_PER_MICRO as f64;
+
+// Reuse normal conversions of empty metrics so baseline fields stay in sync with regular reports.
+static ZERO_METER: LazyLock<MetricLogV1> =
+    LazyLock::new(|| from_meter(&MetricId::new("zero"), &Meter::default()));
+static ZERO_HISTOGRAM: LazyLock<MetricLogV1> =
+    LazyLock::new(|| from_histogram(&MetricId::new("zero"), &Histogram::default()));
+static ZERO_TIMER: LazyLock<MetricLogV1> =
+    LazyLock::new(|| from_timer(&MetricId::new("zero"), &Timer::default()));
 
 /// Converts a metric into a `MetricLogV1`, evaluating gauges inline.
 pub fn from_metric(id: &MetricId, metric: &Metric) -> MetricLogV1 {
@@ -95,6 +104,57 @@ pub fn from_timer(id: &MetricId, timer: &Timer) -> MetricLogV1 {
     )
 }
 
+/// Returns whether a metric's type supports lazy reporting, regardless of its current count.
+///
+/// Meters, histograms, and timers can be omitted while their count is zero. Counters can decrease, and gauges report
+/// current state, so their zero values must still be reported. Use [`should_skip_reporting`] to decide whether to omit
+/// the current sample and [`zero_baseline_log`] to construct a first-use baseline.
+pub fn supports_lazy_reporting(metric: &Metric) -> bool {
+    matches!(
+        metric,
+        Metric::Meter(_) | Metric::Histogram(_) | Metric::Timer(_)
+    )
+}
+
+/// Returns whether the current sample should be omitted because an eligible metric's count is zero.
+///
+/// Eligible types are defined by [`supports_lazy_reporting`]. This follows Java's count-based convention: signed meter
+/// updates that cancel back to zero are also skipped. Counters and gauges return `false`.
+pub fn should_skip_reporting(metric: &Metric) -> bool {
+    match metric {
+        Metric::Meter(m) => m.count() == 0,
+        Metric::Histogram(m) => m.count() == 0,
+        Metric::Timer(m) => m.count() == 0,
+        Metric::Counter(_) | Metric::Gauge(_) => false,
+    }
+}
+
+/// Creates an all-zero baseline for a meter, histogram, or timer at the given timestamp.
+///
+/// Only the metric's type is used, with eligibility defined by [`supports_lazy_reporting`].
+///
+/// A preceding zero lets rates computed from exported counts include the first observations. The caller tracks first
+/// use and chooses an earlier timestamp, skipping the baseline if it would predate reporting startup. Returns `None` for
+/// counters and gauges.
+pub fn zero_baseline_log(
+    id: &MetricId,
+    metric: &Metric,
+    time: DateTime<Utc>,
+) -> Option<MetricLogV1> {
+    let zero = match metric {
+        Metric::Meter(_) => &*ZERO_METER,
+        Metric::Histogram(_) => &*ZERO_HISTOGRAM,
+        Metric::Timer(_) => &*ZERO_TIMER,
+        Metric::Counter(_) | Metric::Gauge(_) => return None,
+    };
+    Some(finish(
+        id,
+        metric_log_v1::Builder::from(zero.clone())
+            .time(time)
+            .metric_name(id.name()),
+    ))
+}
+
 /// Formats a metric ID as `name[key:value,...]` for safe logging.
 pub fn safe_metric_name_with_tags(id: &MetricId) -> AssertLogSafe<String> {
     let mut name = id.name().to_string();
@@ -138,6 +198,7 @@ fn finish(id: &MetricId, builder: metric_log_v1::Builder<metric_log_v1::Complete
 mod test {
     use super::*;
     use serde_json::{Value, json};
+    use std::sync::Arc;
     use std::time::Duration;
 
     fn values(log: &MetricLogV1) -> Value {
@@ -214,6 +275,106 @@ mod test {
         let gauge: std::sync::Arc<dyn Gauge> = std::sync::Arc::new(|| 1);
         let log = from_metric(&MetricId::new("foo"), &Metric::Gauge(gauge));
         assert_eq!(log.metric_type(), "gauge");
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn lazy_meter_reporting() {
+        let meter = Arc::new(Meter::default());
+        let metric = Metric::Meter(meter.clone());
+        assert!(supports_lazy_reporting(&metric));
+        assert!(should_skip_reporting(&metric));
+
+        meter.mark(-1);
+        assert!(!should_skip_reporting(&metric));
+
+        meter.mark(1);
+        assert!(should_skip_reporting(&metric));
+
+        meter.mark(2);
+        assert!(!should_skip_reporting(&metric));
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn lazy_histogram_reporting() {
+        let histogram = Arc::new(Histogram::default());
+        let metric = Metric::Histogram(histogram.clone());
+        assert!(supports_lazy_reporting(&metric));
+        assert!(should_skip_reporting(&metric));
+
+        histogram.update(0);
+        assert!(!should_skip_reporting(&metric));
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn lazy_timer_reporting() {
+        let timer = Arc::new(Timer::default());
+        let metric = Metric::Timer(timer.clone());
+        assert!(supports_lazy_reporting(&metric));
+        assert!(should_skip_reporting(&metric));
+
+        timer.update(Duration::ZERO);
+        assert!(!should_skip_reporting(&metric));
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn counters_and_gauges_are_not_lazy() {
+        let gauge: Arc<dyn Gauge> = Arc::new(|| -> i64 { panic!("gauge must not be evaluated") });
+        let time = "2026-11-17T12:34:56.789Z".parse().unwrap();
+        for metric in [
+            Metric::Counter(Arc::new(Counter::default())),
+            Metric::Gauge(gauge),
+        ] {
+            assert!(!supports_lazy_reporting(&metric));
+            assert!(!should_skip_reporting(&metric));
+            assert!(zero_baseline_log(&MetricId::new("foo"), &metric, time).is_none());
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test::wasm_bindgen_test]
+    fn zero_baseline_logs_match_empty_metrics() {
+        let meter = Arc::new(Meter::default());
+        meter.mark(3);
+        let histogram = Arc::new(Histogram::default());
+        histogram.update(15);
+        let timer = Arc::new(Timer::default());
+        timer.update(Duration::from_micros(19));
+        let time = "2026-11-17T12:34:56.789Z".parse().unwrap();
+        let id = MetricId::new("server.response")
+            .with_tag("service-name", "TestService")
+            .with_tag("endpoint", "getTest");
+
+        for (metric, empty_metric) in [
+            (
+                Metric::Meter(meter),
+                Metric::Meter(Arc::new(Meter::default())),
+            ),
+            (
+                Metric::Histogram(histogram),
+                Metric::Histogram(Arc::new(Histogram::default())),
+            ),
+            (
+                Metric::Timer(timer),
+                Metric::Timer(Arc::new(Timer::default())),
+            ),
+        ] {
+            let log = zero_baseline_log(&id, &metric, time).unwrap();
+            let expected = metric_log_v1::Builder::from(from_metric(&id, &empty_metric))
+                .time(time)
+                .build();
+            assert_eq!(log, expected);
+            assert!(
+                values(&log)
+                    .as_object()
+                    .unwrap()
+                    .values()
+                    .all(|value| value.as_f64() == Some(0.0))
+            );
+        }
     }
 
     #[test]
